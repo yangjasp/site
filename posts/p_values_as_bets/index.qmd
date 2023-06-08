@@ -1,0 +1,104 @@
+---
+title: "Statistical Significance by Betting: Re-framing the p-value?"
+date: 01-24-2021
+image: "BettingImage.jpg"
+---
+
+The p-value, originally developed over 100 years ago by Karl Pearson, has long been a staple of statistical hypothesis testing, but it has become an increasingly controversial topic in recent decades. In 2019, an article titled ["Scientists rise up against statistical significance"](https://www.nature.com/articles/d41586-019-00857-9), which was co-signed by over 800 statistical researchers, was published in *Nature*, bringing the topic to the forefront of conversations across the sciences. 
+
+This controversy has reasonably become a frequent topic of discussion in undergraduate statistics courses, and I have become intrigued by potential solutions. In this post I write about one of the most interesting ones that combines elements of economics and game theory: the proposition that we begin to think of p-values as bets. 
+
+## The Pros and Cons of Statistical Significance
+
+The p-value itself is not an erroneous concept. The issue is that it is so frequently misused and poorly understood that a far too large portion of published scientific conclusions are misguided. This problem arises from the p-value's close relation to and another concept that *is* erroneous in nature: statistical significance. While a p-value is simply the probability that the observed results (or more extreme ones) would have occurred under the null hypothesis, statistical significance is the idea that if a p-value lies under a pre-defined threshold (often 0.05 in the biomedical sciences), then the result is "significant", otherwise is it not.  
+
+On the surface, statistical significance seems like a reasonable idea, especially considering that it requires that the threshold for significance is pre-defined to prevent researchers from moving it around to force their hypotheses to be "significant". It also allows researchers to present their results in a more convincing manner (publishing results that says this drug most likely works doesn't cut it for many), while not making conclusions completely certain because significant &#8800; definitely true. 
+
+Unfortunately, no matter how many times statisticians try to hammer the previous inequality into the minds of their colleagues and readers, significance is frequently interpreted as a definite answer. This manner of thinking stems from our (evolutionarily selected for) human desire for certainty, which causes us to make things more black-and-white than they truly are. Thus, if p = 0.049, we reject the null hypothesis and claim our results to be "significant", but we can't draw a meaningful conclusion if p = 0.051 even though the difference between these two p-values is really next to meaningless. On top of that, significance is rarely presented in levels, meaning a test that yields a p-value of 0.001 is frequently interpreted to be just as convincing as a test that yields a p-value of 0.04.
+
+The current use of the p-value in research also leads to problems when multiple comparisons are involved. While methods such as the Bonferroni correction are frequently used to address these issues at the experimental level, they are more difficult to avoid on larger scales. For example, if 20 different researchers groups study a hypothesis that is not actually true, we can expect one to conclude that the hypothesis is actually significant based on chance alone. When research publication processes favor studies with "significant" results, they are asking for false hypotheses to be presented and accepted by the scientific community. This demonstrates why many research communities are facing [replication crises](https://www.apa.org/ed/precollege/psn/2020/03/replication-crisis).
+
+Despite these concerns, some [researchers](https://www.nature.com/articles/d41586-019-01530-x) have defended statistical significance by comparing it to concepts like "beyond reasonable doubt" in courts. They point out that we can never know anything with absolute certainty no matter how much evidence there is, so we must live with threshold of significance that helps us get most things right, even if it means risking some incorrect conclusions simply due to chance.
+
+Ultimately, both of these arguments have merit. A major issue in scientific research is incorrect interpretation of p-values and statistical significance, so better education and presentation is certainly needed. But how much will that really change? If we did decide to forget the concept of significance, is there a better alternative?
+
+Maybe all we need to do is re-frame it. 
+
+## Decisions as Bets
+
+As bestselling author and elite poker player Annie Duke [points out](https://www.goodreads.com/en/book/show/35957157-thinking-in-bets), decisions are simply bets on the future. We can never know for sure which choice will result in the better outcome, but we make decisions based on the evidence we have and are willing to put more at stake as our perceived probability of a positive outcome increases. As a simple example, I am willing to drive for an hour to visit my friend because based on my assessments (conscious or subconscious), I am so much more likely to have an enjoyable time with him than I am to get in a car accident on the way that the decision to drive is worth it. Plus, staying home by myself won't be very enjoyable. In contrast, if the weather forecast suggested heavy snow, I might decide that the the enjoyment I would get out of seeing my friend is no longer worth the risk of getting in a car accident. Every decision we make, including which cereal we want to eat for breakfast, follows this same process (although they are subject to frequent errors in our risk/benefit calculations).
+
+When risk calculations are well thought out, making decisions as bets on the future will maximize our chances of favorable outcomes. We will of course get unlucky sometimes, but in the long run we are increasing our chances of success. 
+
+Now, this begs the question: why aren't scientists treating their research decisions as bets? By using a uniform p-value threshold for significance, we are severely oversimplifying the decision-making process by:
+
+1. Making it difficult for audiences to comprehend the strength of the evidence beyond a binary yes/no. 
+
+2. Essentially treating every research project as being equally important.
+
+In later sections, I refer to these points as oversimplifications 1 and 2. 
+
+The current scientific standard is that we are willing to accept a 5% chance of Type I error (incorrectly rejecting the null hypothesis) for every biomedical study. In terms of the friend-visiting example, that is like me deciding that I will only make the drive if there is a 50% chance or less of snow, regardless of whether the friend is a distant acquaintance or my lifelong best friend on his deathbed. Clearly, my willingness to risk driving should depend on the context of who the friend is. Even more, if I had to defend my decision to someone else (say, for example, my worried mother), she would certainly react differently if the chance of snow was 49% compared to 0.01%. Is scientific research any different?
+
+*The concept of statistical significance takes research findings out of their context. Re-framing p-values as bets may lead to better overall research outcomes by bringing the context of the work into the decision.*
+
+## Glenn Shafer's Betting Scores
+
+As I became more interested in this idea of re-framing the p-value as a bet, I stumbled upon the Rutgers-Royal research group. Their project titled "Game-Theoretic Probability and Finance" has been ongoing for over two decades, and they have published a number of interesting papers online, many of which can be found [here](http://www.probabilityandfinance.com/articles/index.html). Glenn Shafer, a Mathematical Statistician from The University of Rutgers, is a leader of this group. In this section I summarize some of his basic points from [this article](https://arxiv.org/pdf/1903.06991.pdf) that specifically tackle issues with the current use of the p-value. Note that the approaches outlined in this section relate primarily to oversimplification 1 from the previous section: the problem of binary (yes/no) significance. It also helps to address problems with multiple comparisons and can be extended to incorporate many more factors
+
+The fundamental principle of Dr. Shafer's alternative to statistical significance is what he calls a *betting score*. This is defined as:
+
+$$\frac{S(y)}{\mathbf{E}_p(S)}$$
+
+where:
+
+* $S(y)$ is the payoff received for y occurring
+* $\mathbf{E}_P(S)$ is the *expected value*^1^ of the bet under the null hypothesis (which Shafer calls $P$), or the "money" put at risk. 
+* Thus, we can call $S$ the bet. $S$ is a (non-negative) function.
+
+Since constant multipliers of the bet do not change the ratio (i.e. the betting score is the same whether $1 or $5 is bet, just as betting $100 vs. $150 on your favorite football does not change the bookmaker's odds), Shafer assumes that $\mathbf{E}_p(S)$ = 1 for simplicity. In this case, the betting score is just $S(y)$. 
+
+In addition to making things simpler, setting $\mathbf{E}_p(S)$ = 1 also conveniently means that $SP$ is a probability distribution defined by the non-negative bet ($S(y)$) under the null hypothesis ($P$, which is itself a probability distribution). This distribution defines the alternative to P according to the bet, which can be called Q. By this definition, $S(y)$ = $Q(y)/P(y)$, so Shafer shows us that the betting score is a likelihood ratio of the alternative hypothesis to the null hypothesis.
+
+Under this simple framework, researchers may present their results as betting scores against the null hypothesis. In other words, they show how much money a bet for Q with an expected value of $1 under the null hypothesis has actually returned based on the scientific evidence. Clearly, higher payoffs mean that the research has presented stronger evidence that the null hypothesis is incorrect. 
+
+A key added bonus of this betting score method is that successive tests can be assessed simply by multiplying betting scores. That is, the money won from the earlier tests (and no more) is used to "buy" a subsequent bet. Here, the accumulated return can be used to assess the overall evidence, which helps to address multiple comparison issues and the closely related replication crisis.
+
+So does Dr. Shafer's testing by betting proposal eliminate the idea of significance altogether? Not really. No matter how a statistical hypothesis test is framed, a sound one requires a way to evaluate it before it is run given the hypotheses. Under the traditional p-value framework, this is where the idea of statistical power comes in. Recall that power tells us the probability that the test will reject the null hypothesis if it is truly incorrect. Under Shafer's framework, hypothesis tests are set up beforehand with an *implied target*, $S^{\ast} = \exp(\mathbf{E}_Q(\ln{S}))$ (see Dr. Shafer's paper in the references for details about where this comes from). This value is betting score that is defined by the bet and null hypothesis. If Q is correct, this implied target is the expected betting score. Thus, a good test must have a high implied target (For reference, Shafer points out that a standard test always has an implied target of 20 if $\alpha$ = 0.05) and a reasonable Q. If these conditions are met, the betting score is a valuable, publishable result regardless of how strong it is.
+
+## Considering Research Impact
+
+While Glenn Shafer's theory of betting scores and implied targets helps to address oversimplification 1, the current framework does not discuss the second oversimplification that the current use of statistical significance suffers from: the issue that every project is essentially treated the same.
+
+Many statisticians will argue that this is in fact a strength of statistical significance, and there are certainly strong arguments supporting this notion. To highlight how it can sometimes be problematic, though, I present the following examples: suppose that an efficacy trial for a pandemic-saving vaccine is run, but the pressure of time and difficulties enrolling participants in the study decreases its statistical power. The study concludes, and the statisticians analyze the data as the public waits eagerly. Finally, the results are published and show some evidence that the vaccine is effective, but p = 0.08. The research team offers to continue testing, but it would be very costly in addition to having methodological problems. Even though the increased efficacy compared to the placebo was not "statistically significant", how should the results be interpreted? 
+
+In contrast, let's now suppose that a vaccine for a rare, non-fatal disease is being tested in a pandemic-free world. A clinical trial with this somewhat risky vaccine is run and yields the exact same results as the study from the previous example. Again, p = 0.08. 
+
+Despite yielding the same statistical results, the context of these two example studies clearly calls for their results to be interpreted differently by society (the stakeholders in the outcome). While the differences between most research projects are not as stark as the differences in these example scenarios, no two studies have the exact same potential risk/benefit to society. Even though researchers, statisticians, and policy makers certainly consider societal impacts in *their* current interpretations of research, 1) the all-or-nothing framing of statistical significance abets misjudgments by readers and 2) the way in which the potential impact is incorporated with the results is not standardized, nor is it a part of the actual research process. Instead, the interpretation beyond the p-value is often left to non-technical policymakers. Would it not make more sense to include these valuations as part of the research results? If they were to be included, testing by betting would be a perfect framework by which to incorporate them. Turning back to Shafer's proposals, the pre-determined potential societal impact could be incorporated into the bet and thus also the implied target.
+
+## The Freerolling Problem in Science
+
+I had difficult time finding theoretical work on a "betting" model for scientific research that would incorporate the potential societal impact. After some digging, though, I came across a very brief discussion of this issue [here](https://www.youtube.com/watch?v=qKWF737Av2o) by a colleague of Shafer's at Rutgers, Harry Crane. In this mini-talk he uses the term "freerolling", a word used in gambling to describe betting with a chance to win money but no chance of losing, to help illustrate why research results are so often misrepresented and how framing results as bets could be useful.
+
+Taking a step back to the earlier example of my decision to visit my friend, the freerolling issue would occur if a third individual who doesn't care whether or not I get into a car accident makes the decision for me. In fact, this individual would be rewarded if I made the trip but not punished at all if I didn't. Researchers, specifically statisticians, often very little at stake in regards to the implication of their results. If they submit "significant" results to a journal, they have a greater chance of being published, improving their reputation, and feeling that the work was meaningful. They clearly have a chance to benefit from the claim of "significance", but if later evidence disproves their results, they won't face any major consequences and can save their reputation by calling it an unlucky case of type II error. Meanwhile, the patients/population who had a direct stake in the study results may face more grave consequences. 
+
+In this sense, publishing "significant" results in scientific research is clearly a freeroll bet. Researchers have a chance at being rewarded for publishing misleading results without any chance of being punished. This incentives practices such as "p-hacking" and data over-analysis. So how do we combat this? One approach would be to force researchers to have a stake in their results by betting on them. This idea differs from Shafer's betting score theory, which is based on conceptual bets as a way of capturing confidence in results, but could still be incorporated as an extension.
+
+## Conclusion
+
+The message of this post is not that there is something wrong with p-values. The problem is that the binary, all-or-nothing use of statistical significance that doesn't take into account the context of the study question is often incorrectly used to interpret them. While Glenn Shafer's proposed betting score approach combats the issue of binary classification, it doesn't account for the potential study impact and thus would treat the results from the two examples above the exact same. It seems that these significance by betting theories could possibly be extended to also differentiate between studies with different risk/benefit distributions.
+
+As an aspiring statistician, I am fascinated not only by the way in which data is analyzed, but also by the way in which it is interpreted and meaningfully presented. My limited experience in statistical research has shown me the limitations that the concept of statistical significance presents when it comes to this task of presenting data. I wrote this post to document some interesting ideas that I discovered on this topic, but I am not necessarily in favor of all of them. It will be exciting to to see how this conversation develops in the future!
+
+## References
+* Crane, H. (2020). Response to Glenn Shafer's Testing by betting: A strategy for statistical and scientific communication [presented at the Royal Statistical Society Conference]. https://www.youtube.com/watch?v=qKWF737Av2o
+
+* Shafer, G. (2019). The language of betting as a strategy for statistical and scientific communication. arXiv preprint arXiv:1903.06991.
+
+* Shafer, G. (2020). Testing by betting: A strategy for statistical and scientific communication [presented at the Royal Statistical Society Conference]. https://www.youtube.com/watch?v=qKWF737Av2o
+
+* Shafer, G. (2021). Let’s replace (p-value + power) with (betting outcome + betting target) [presented at NC State University]. https://www.youtube.com/watch?v=rnS08IRubGM
+
+## Notes
+^1^ *Expected Value* is the weighted average, or mean, of a random variable. In the context of betting, take a situation where the future has two discrete outcomes. Let's say that there is a 10% chance that I win $20 and a 90% chance that I lose $1. The expected value of this bet is 0.1\*20 + 0.9\*-1 = $1.1.
+

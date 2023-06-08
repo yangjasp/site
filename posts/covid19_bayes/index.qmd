@@ -1,8 +1,8 @@
 ---
 title: "COVID-19 Testing and Bayes' Theorem"
 author: "Jasper Yang"
-description: "COVID tests as new evidence"
 date: 12-15-2020
+categories: 
 preview: NULL
 output:
   distill::distill_article:

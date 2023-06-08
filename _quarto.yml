@@ -6,8 +6,10 @@ website:
   description: "Jasper Yang's personal site"
   navbar:
     right:
+      - text: About
+        href: index.qmd
       - text: Blog
-        href: about.qmd
+        href: blog.qmd
       - icon: github
         href: https://github.com/yangjasp
       - icon: twitter
