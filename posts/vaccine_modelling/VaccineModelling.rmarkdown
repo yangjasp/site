@@ -1,0 +1,1094 @@
+---
+title: "Modeling COVID-19 and Vaccine Rollout Strategies"
+preview: NULL
+author: "Jasper Yang"
+date: 12-28-2020
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{multirow}
+  - \usepackage{placeins}
+---
+
+```{r setup, include=F}
+library(DiagrammeR)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggsci)
+library(ggthemes)
+library(contactdata)
+library(deSolve)
+```
+
+
+Over the past three weeks, the United States government has approved two different COVID-19 vaccines for emergency use. These two vaccines, one developed by Pfizer and the other by Moderna, are actually quite similar in that they are both two-dose mRNA vaccines with mild side-effects, and they have almost identical efficacy rates (95% and 94.1% respectively according to the [FDA](https://www.fda.gov/emergency-preparedness-and-response/coronavirus-disease-2019-covid-19/covid-19-vaccines)). The only notable [difference](https://abc7.com/moderna-and-pfizer-vaccine-whats-the-difference-between-side-effects-effectiveness/8815593/) is that the Moderna vaccine can be stored in a standard freezer while the Pfizer vaccine must be stored at -70 degrees Celsius, making it slightly less accessible for small healthcare centers. 
+
+Consequently, U.S. vaccine rollout plans have so far treated the two vaccines as essentially being the same, that is to say neither of the two vaccines is considered better than the other. This somewhat unexpected fact has simplified the already [controversial](https://www.newsweek.com/nate-silver-criticism-covid-vaccine-report-interpretation-1556198 ) rollout, but the impending introductions of new vaccines from companies like Johnson & Johnson and AstraZaneca threaten to introduce a new complexity. If a new vaccine with only 70% efficacy becomes available, how should it be incorporated into the rollout? Is it better to give at-risk patients a worse vaccine if it means they can get vaccinated a month earlier? Will people even want it? 
+
+The answers to these questions are certainly complex, and they will likely draw from principles in biology, mathematics, statistics, and economics among other fields. I cannot pretend to be an expert here - I am hopeful that the true experts have been thinking deeply about this issue - but I think the problem is quite fascinating. This post contains my thoughts and some basic modeling! 
+
+## What is Vaccine Efficacy?
+
+Before moving any further, let's make sure we understand what vaccine efficacy is. Essentially, it is a measure of how well a vaccine prevents cases of the disease in a group of vaccinated subjects compared to a control group of un-vaccinated (received placebo) subjects. An estimate of the efficacy is generated from clinical trial data, which every vaccine must collect and submit to the FDA for review before being made available to the public.
+
+The actual calculation of efficacy relies on a term called *risk*. In epidemiology, *risk* is the probability that an event (such as infection) will occur in a given time period, and it is measured in a clinical trial as the proportion of total subjects in a group who experienced the event in the time period that they were followed. For example, if 8 out of 1,000 patients who receive an actual vaccine in a clinical trial become infected with COVID-19, then the estimate of risk of infection in the vaccination group is simply 0.008, or 0.8%. The ratio of risk in the treatment (actual vaccine) group compared to the risk in the control (placebo) group is called the *risk ratio*. Risk ratios below 1 suggest that the treatment reduces the risk of disease compared to the control, and smaller ratios suggest a stronger reduction. Efficacy is calculated as 1 - Risk Ratio, so an efficacy closer to 1 (or 100%) means that the vaccine reduces the risk of infection by a greater proportion. You can read more about vaccine efficacy on the CDC website [here](https://www.cdc.gov/csels/dsepd/ss1978/lesson3/section6.html).
+
+Remember that ratios are multiplicative, not additive, so we can intepret 95% vaccine efficacy (the equivalent to 100%-95% = 5% risk ratio) as meaning that the risk for COVID in the vaccine group is 0.05 (5%) times the risk in the control group.  
+
+## A Simple Model
+
+To assess the potential effects of different vaccine rollouts, we will create a model of the COVID-19 pandemic in the United States. Our first step will be to develop a simple framework using principles from epidemiology before adding more complex features. For this simple model, we divide the population of the United States into four groups: susceptible (S), infected (I), recovered and immune (R), and deceased (D). At a specific point in time, every individual should fall into one and only one of these categories.
+
+With these categories established, our next job is to determine a way to describe the flow of individuals from group to group. See **Diagram 1** below: 
+
+<center>
+
+
+```{r, fig.align='center', echo=FALSE}
+DiagrammeR::grViz("digraph {
+  graph [layout = dot, rankdir = LR]
+  
+  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   
+  rec1 [label = <<b>Susceptible Individuals (S):</b>>]
+  rec2 [label = <<b>Infected Individuals (I):</b>>]
+  rec3 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/></b>>]
+  rec4 [label = <<b>Deceased Individuals (D):</b>>]
+  
+  # edge definitions with the node IDs
+  rec1 -> rec2 rec2 -> rec3 rec2 -> rec4 rec3 -> rec1 
+
+  }", 
+  height = 250, width = 700)
+```
+
+
+</center>
+
+We are interested in how the flow of individuals occurs over time, so we will measure it as the rate at which people exit/enter a group per day. Below we explore each arrow on the diagram above:
+
+* **S &rightarrow; I:** The rate at which susceptible individuals become infected. This value intuitively depends on the rate of contact between susceptible and infected individuals as well as the probability that the disease would be transmitted given a contact occurs. Here we introduce our first parameter, $\beta$, which captures the *rate of transmission*. We can calculate $\beta$ using $R_0$, the more intuitive "basic reproductive rate" of a disease, $\gamma$, the recovery rate (which is calculated as as 1/length of infectious period), and $N$, the population size, because: 
+
+$$\begin{align*}
+\beta = \frac{R_0 \gamma}{N}
+\end{align*}$$
+
+|        Thus, S &rightarrow; I is described by $\beta S I$ where $S$ and $I$ are the number 
+|        of individuals in groups S and I.
+
+* **I &rightarrow; D:** The rate at which infected individuals die. This depends on our second parameter, $\gamma$, and a third parameter, $\mu$, the death rate. As the inverse of the infectious period, $\gamma$ captures the average number of infected individuals that stop being infectious each day (i.e. if the infectious period is 5 days, then 1/5 of infectious individuals stop being infectious each day). As the death rate, $\mu$ tells us what fraction of individuals leaving $I$ are headed to $D$ (what percent die), while the rest, or 1-$\mu$, recover and head to $R$. Thus, I &rightarrow; D is described by  $\gamma I\mu$. 
+
+* **I &rightarrow; R:** The rate at which infected individuals recover. Using logic from I &rightarrow; D, above we have I &rightarrow; D is described by $\gamma I(1-\mu)$. Note that the total rate at which individuals exit $I$ is simply $\gamma I$ because every infected individual either dies or recovers.
+
+* **R &rightarrow; S:** The rate at which recovered individuals lose immunity and become susceptible again. This value depends on a fourth paramter, $\omega$, the inverse of the period of immunity. It is the same idea as $\gamma$. 
+
+With these rates determined, we can now create a system of ordinary differential equations to describe the flow of people between groups. For each group, the change in size with respect to time (the derivative) is simply the sum of the rates with which people enter it (arrows entering the box) minus the rates with which people leave (arrows leaving the box). Thus, we have:
+
+$$\begin{align*}
+\frac{dS}{dt} &= -\beta S I + \omega R \\ 
+\frac{dI}{dt} &= \beta S I - \gamma I\\
+\frac{dR}{dt} &= \gamma I(1-\mu) - \omega R\\
+\frac{dD}{dt} &= \gamma I(\mu)
+\end{align*}$$
+
+where the parameters $\beta$, $\gamma$, $\omega$, and $\mu$ are the transmission rate, recovery rate, loss of immunity rate, and death rate, respectively. If we set values for each of these parameters based on our knowledge of the COVID-19 pandemic and set initial sizes for each group, we can track the course of the disease by solving this system of ordinary differential equations for each day to model how the disease might progress.
+
+## Adding Long-Term Immunity: Vaccines
+
+Now that we have established the basic theoretical framework of the model, we can start to add complexities such as vaccines. Vaccinated individuals will come out of the susceptible group and enter a new group with different properties from the four we established before. See **Diagram 2** below:
+
+<center>
+
+
+```{r, fig.align='center', echo=FALSE}
+DiagrammeR::grViz("digraph {
+  graph [layout = dot, rankdir = LR]
+  
+  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   
+  rec1 [label = <<b>Susceptible Individuals (S):</b>>]
+  rec2 [label = <<b>Vaccinated Individuals (V):</b>>]
+  rec3 [label = <<b>Infected Individuals (I):</b>>]
+  rec4 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/></b>>]
+  rec5 [label = <<b>Deceased Individuals (D):</b>>]
+  
+  # edge definitions with the node IDs
+  rec1 -> rec2 rec1 -> rec3 rec3 -> rec4 rec3 -> rec5 rec4 -> rec1 
+
+  }", 
+  height = 250, width = 700)
+```
+
+
+</center>
+
+This model assumes that every vaccinated individual is protected completely from infection, but we know that this is not the case for COVID-19 vaccines in the real world. Accounting for this fact and supposing that individuals can receive one of two different vaccines, we have a new model detailed in **Diagram 3**.
+
+<center>
+
+
+```{r, fig.align='center', echo=FALSE}
+DiagrammeR::grViz("digraph {
+  graph [layout = dot, rankdir = LR]
+  
+  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   
+  rec1 [label = <<b>Susceptible Individuals (S):</b>>]
+  rec2 [label = <<b>Vaccine 1 (V1):</b>>]
+  rec3 [label = <<b>Vaccine 2 (V2):</b>>]
+  rec4 [label = <<b>Infected Individuals (I):</b>>]
+  rec5 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/></b>>]
+  rec6 [label = <<b>Deceased Individuals (D):</b>>]
+  
+  # edge definitions with the node IDs
+ rec1 -> rec2 rec1 -> rec3 rec2 -> rec4 rec3 -> rec4 rec1 -> rec4  rec4 -> rec5 rec4 -> rec6 rec5 -> rec1
+
+  }", 
+  height = 250, width = 700)
+```
+
+
+</center>
+
+Assuming that the number of vaccines given per day, $\nu_1$ and $\nu_2$, and the rates of success, $\varphi_1$ and $\varphi_2$, for each vaccine are known, we now have the following system of ordinary differential equations:
+
+$$\begin{align*}
+\frac{dS}{dt} &= -\beta S I + \omega R -  \nu_1  -  \nu_2 \\
+\frac{dV_{1}}{dt} &= \nu_1 - (1-\varphi_1) \beta V_1 I\\
+\frac{dV_{2}}{dt} &= \nu_2 - (1-\varphi_2) \beta V_2 I \\
+\frac{dI}{dt} &= \beta S I - \gamma I + (1-\varphi_1)\beta V_{1} I + (1-\varphi_2)\beta V_{2} I \\ &= \beta I[S + (1-\varphi_1)V_{1} + (1-\varphi_2)V_{2}] - \gamma I\\
+\frac{dR}{dt} &= \gamma I(1-\mu) - \omega R\\
+\frac{dD}{dt} &= \gamma I(\mu)
+\end{align*}$$
+
+There are obviously a number of assumptions that this model is making for the sake of simplicity. The big ones are: 
+
+* Every individual has the same $\beta$, that is the same probability of coming into contact with an infected individual and then contracting it.
+* Actually, all the parameters $\beta$, $\gamma$, $\omega$, $\mu$, $\nu_1$, $\nu_2$, $\varphi_1$, and $\varphi_2$ are constant throughout the population and over time.
+* The population is closed other than COVID deaths. No births or deaths from other causes are accounted for. 
+
+We should be okay with most of these assumptions for the sake of our simple model. Accounting for the ways in which behavioral changes, weather patterns, and government policies change the parameters would help the model better reflect the real life course of the virus, but we will leave that to the [experts](https://research.columbia.edu/covid/mapping/survival-convolution). With that said, there is one key factor that is currently being ignored - age.
+
+It is well known that virus impacts different age groups in very different ways. In terms of our parameters, the death rate, $\mu$, varies greatly across age groups. On top of that, the vaccine rollout plans (impacting $\nu_1$ and $\nu_2$) will also certainly account for differences in age. In the following section, I discuss how we can incorporate age classes into our model.
+
+## Adding Age Classes
+
+Let's now suppose that our population is made up of distinct age classes where $N_i$ is the number of individuals in age group $i$. For our purposes, we will use the age classes (with their corresponding N and death rates) detailed below:
+
+
+```{r,echo=F}
+rates_df2 <- data.frame(Age = c("85+","75-84","65-74","50-64","40-49","30-39","18-29","5-17","0-4"))
+rates_df2$incidence <- c(0.05064,0.03147,0.02977,0.03993,0.04543,0.04671,0.05489,0.01944,0.01135)
+rates_df2$death <- c(0.2208333,0.1163648,0.04820289, 0.01267218, 0.003455866, 0.001348748, 0.0004008016, 0.0001028807, 0.0002643172)
+rates_df2$population <- c(5493433, 13061122, 21713429, 58986087, 43038661, 41067277, 50934110, 58316329, 16161090)
+
+pop_dat <- data.frame(i = seq(1:18),Age = c("0-4","5-9","10-14","15-19","20-25","26-30","31-35","36-40","41-45","46-50","51-55","56-60","61-65","66-70","71-75","76-80","81-85","85+"),population = c(19.58,10.32+9.87,10.62+10.18,10.75+10.31,11.06+10.57,12+11.5,11.35+11.08,10.88+10.85,9.91+10.01,10.09+10.31,10.09+10.39,10.64+11.23,9.86+10.71,8.2+9.26,6.5+7.53,4.32+5.33,2.68+3.64,2.38+4.23))
+pop_dat$RateDeath <- sprintf("%.5f",c(rates_df2[9,"death"], rates_df2[8,"death"], rates_df2[8,"death"], (3*rates_df2[8,"death"]+2*rates_df2[7,"death"])/5, rates_df2[7,"death"], rates_df2[7,"death"], rates_df2[6,"death"],  rates_df2[6,"death"], rates_df2[5,"death"], rates_df2[5,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[3,"death"], rates_df2[3,"death"], rates_df2[2,"death"], rates_df2[2,"death"], rates_df2[1,"death"]))
+
+names(pop_dat) <- c("i","Age","Population (in Millions)","Death Rate*")
+
+table1 <- flextable(pop_dat)
+table1 <- italic(table1, i = 1, j = 1, italic = T, part = "header")
+footnote_text <- "*Death Rate is calculated as overall deaths rate of population divided by overall incidence rate in population according to the CDC's ACIP report on 12/20/20. Population totals are for 2019 from Statistica.com."
+
+# Create a new paragraph containing the footnote
+footnote_paragraph <- as_paragraph(footnote_text)
+
+# Add the footnote to the table
+table1 <- add_footer_lines(table1, value = footnote_paragraph)
+autofit(table1)
+```
+
+
+
+The seemingly simple, however incorrect, approach would be to run our previously specified vaccine model on each age group individually and calculate the overall size of each group as the sum of its size in each age group. For example, $S =  \sum_{i=1}^{18} S_i$. The problem with this approach is that it assumes that individuals only interact with, and therefore can only be infected by, people in the same age class. This is clearly not reflective of the real world.
+
+To solve this issue, we need a **contact matrix**. A contact matrix describes the contacts between age group $i$ and age group $j$. As an example, let's suppose that there are 900 students and 100 teachers in a school. Students make on average 40 contacts with other students and 10 contacts with teachers per day. Since the ratio of students to teachers is 9:1, students making 10 contacts with teachers on average means that teachers make on 10*9 = 90 contacts with students per day an average. Now also assume that the teachers only make contact with 5 other teachers per day on average. The contact matrix would be:
+
+$$
+\begin{bmatrix}
+40 & 10 \\
+90 & 5 \\
+\end{bmatrix}
+$$
+
+These contact matrices have a few cool properties. You can read more about them [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4002176/).
+
+Because of the importance of the student-to-teacher ratio in the example above, contact matrices based on one demographic or social structure are are not generally compatible with other structures. Conveniently, a 2017 [study](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005697#sec014) by Kiesha Prem, Alex Cook, and Mark Jit estimated contact matrices for 152 countries, including the United States, using contact surveys and demographic data. We can download their contact matrix for the United States, multiply it by 0.2 to account for the reduced social mixing due to social distancing, and include it as a new parameter, C, in our model. You can view the code for the creation of C and the rest of this analysis at [https://github.com/yangjasp/distill_site](https://github.com/yangjasp/distill_site).
+
+For our system of ordinary differential equations we now have:
+
+$$\begin{align*}
+\frac{dS_i}{dt} &= -\beta S_i C (I_i/N) + \omega R_i - \nu_{1i}  -  \nu_{2i} \\
+\frac{dV_{1i}}{dt} &=  \nu_{1i} - (1-\varphi_1) \beta V_{1i} C (I_i/N)\\
+\frac{dV_{2i}}{dt} &=  \nu_{2i} - (1-\varphi_2) \beta V_{2i} C (I_i/N)\\
+\frac{dI_i}{dt} &= \beta S_i I_i - \gamma I_i + (1-\varphi_1)\beta V_{1i} C (I_i/N) + (1-\varphi_2)\beta V_{2i} C (I_i/N) \\
+\frac{dR_i}{dt} &= \gamma I_i(1-\mu_i) - \omega R_i\\
+\frac{dD_i}{dt} &= \gamma I_i(\mu_i)
+\end{align*}$$
+
+Note that this model assumes that the parameters $\beta$, $\gamma$, $\omega$, $\varphi_1$, and $\varphi_2$ are constant across all age classes, while the death rate, $\mu_i$, and the vaccination rates, $\nu_{1i}$ and $\nu_{2i}$, vary across classes.
+
+## Completing the Final Model
+
+Introducing a contact matrix allows our model to more accurately capture the rate of transmission across age classes, but it does not account for the fact that asymptomatic carriers are much more likely to come into contact with susceptible individuals than symptomatic ones. With this fact in mind, we introduce one more parameter, $\alpha_i$, to represent the fraction of asymptomatic infections per age class. This addition should be an important one, as it will help our model better capture the [reported](https://jamanetwork.com/journals/jama/fullarticle/2773055) role of young adults as viral spreaders. Similarly to the approach described in a 2012 [paper](http://www.sherrytowers.com/towers_feng_2012.pdf) by Tower and Feng, we can now split our infected (I<sub>s</sub>) classes into symptomatic (I<sup>s</sup>) and asymptomatic (I<sup>a</sup>) class. We will also create a new contact matrix, C<sup>s</sup>, which for our purposes will be a our old contact matrix, now called C<sup>a</sup>, multiplied by some constant $k$ < 1 which represents the fraction of contacts that a symptomatic individual makes compared to an asymptomatic individual on average. This gives us a revised final system of ordinary differential equations:
+
+$$\begin{align*}
+\frac{dS_i}{dt} &= -\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \omega R_i - \nu_{1i}  -  \nu_{2i} \\
+\frac{dV_{1i}}{dt} &=  \nu_{1i}  - \beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] \\
+\frac{dV_{2i}}{dt} &=  \nu_{2i}  - \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\\
+\frac{dI^{a}_i}{dt} &= 
+\alpha_i\Big[\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \\ &\phantom{=}
+\beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] +  \\ &\phantom{=}  \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\Big] - 
+\gamma I^{a}_i \\
+\frac{dI^{s}_i}{dt} &= (1-\alpha_i)\Big[\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \\ &\phantom{=}
+\beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] +  \\ &\phantom{=}  \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\Big] - 
+\gamma I^{s}_i \\
+\frac{dR_i}{dt} &= (1-\mu_i)(\gamma I^{a}_i + \gamma I^{s}_i) - \omega R_i\\
+\frac{dD_i}{dt} &= \mu_i(\gamma I^{a}_i + \gamma I^{s}_i)
+\end{align*}$$
+
+Where $C^{s} = k C^{a}$ in our case (it doesn't have to in all cases, clearly, but we will use this for simplicity). This is our final model.
+
+## Running the Model
+
+We can now use this model to answer our original question about the rollout of vaccines with different efficacies by adjusting the rates at which they are given in each age class, $\nu_{1i}$ and $\nu_{2i}$.
+
+So how do we set $\nu_{1i}$ and $\nu_{2i}$? According to a recent Bloomberg [article](https://www.bloomberg.com/news/articles/2020-12-29/u-s-vaccinations-at-200-000-a-day-run-far-short-of-warp-speed), approximately 200,000 people per day are being vaccinated against COVID-19 on average. This number is pretty low, and some experts have [said](https://www.cnbc.com/2020/12/30/covid-us-needs-to-vaccinate-3-million-people-per-day-to-hit-goal.html) that this number needs to be much larger if the U.S. wants to reach its goals in 2021. Let's say that the average number of vaccinations per day increases to 1 million in the new year. Since we defined $\nu_{1i}$ and $\nu_{2i}$ as the number of susceptible patients vaccinated per day, we can set a limit on the total vaccinations per day, $1,000,000 =  \sum_{i=1}^{18} \nu_{1i}+\nu_{2i}$. Here, we assume that the limiting factor in doses per day is the administration of them, not the availability of the vaccines themselves. Right now, this appears to be a [more than reasonable](https://www.nytimes.com/interactive/2020/us/covid-19-vaccine-doses.html) assumption.
+
+Note: for the models that follow, I will be using the following parameters: 
+
+| Parameter | Value |
+|----------------|-----------------------------------------------------------------------|
+| $\beta$ | 0.05 |
+| $\gamma$ | 1/7 |
+| $\omega$ | 1/91 |
+|$\varphi_1$ | 0.95 |
+|$\varphi_2$ | 0.70 |
+|$k$ | 0.20 |
+
+### Scenario 1: Only One Vaccine Available
+
+Let's start by supposing that only one vaccine efficacy, 95%, is available. Remembering our discussion about vaccine efficacy, this means that compared to people who are not vaccinated, those who have been vaccinated have 0.05 times the risk of getting COVID. Assuming vaccinated individuals are making the same social contacts as they would if they were not vaccinated, this means that we have $\sum_{i=1}^{18} \nu_{1i} = 1,000,000$ ($\nu_{2i} = 0$ for all $i$), and $\varphi_{1i} = 0.95$. That is, people who receive a vaccine receive vaccine 1 and are $1-\varphi_{1i}=0.05$ times as likely to get COVID as those in the S group.
+
+Below is a series of  graphs comparing the the overall trajectory of deaths due to COVID-19 in the U.S. with no vaccine, Vaccine 2 (70% Efficacy) alone, and Vaccine 1 (95% Efficacy) alone. In these scenarios, both vaccines are administered starting with the oldest individuals and gradually moving down age classes.
+
+
+```{r, echo = F,fig.height= 12,eval=T, preview = FALSE}
+# Real Model with Matrices ----------------------------------------
+plot_model2 <- function(distancing_const, r_0, Efficacy_V1,Efficacy_V2,Vax1_func,Vax2_func){
+
+#Adapted from Sherry Towers work http://www.sherrytowers.com/sir_age.R
+model2 <- function(t, x, parms){
+  ncompartment = 7
+  nage = length(x)/ncompartment
+  S   = as.matrix(x[1:nage])
+  V1  = as.matrix(x[(nage+1):(2*nage)])
+  V2  = as.matrix(x[(2*nage+1):(3*nage)])
+  IA  = as.matrix(x[(3*nage+1):(4*nage)])
+  IS  = as.matrix(x[(4*nage+1):(5*nage)])
+  R   = as.matrix(x[(5*nage+1):(6*nage)])
+  D   = as.matrix(x[(6*nage+1):(7*nage)])
+  
+  V1[V1<0] = 0
+  V2[V2<0] = 0
+  IA[IA<0] = 0
+  IS[IS<0] = 0
+  S[S<0] = 0
+  R[R<0] = 0
+  N <-  S+V1+V2+IA+IS+R
+  
+  #Specify Sabove for vaccine rollout
+  Sabove_list <- list()
+  for (i in (2:18)){
+    Sabove_list[[i-1]] <- sum(S[i:18,1])
+  }
+  Sabove_list[[18]] <- Sabove_list[[17]]
+  Sabove_mat <- as.matrix(unlist(Sabove_list))
+  
+  dS <- -as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))  - as.matrix(diag(sapply(parms[["RateVax1"]],mapply,t=t,Smin=Sabove_mat,S=S))) - as.matrix(diag(sapply(parms[["RateVax2"]],mapply,t=t,Smin=Sabove_mat,S=S))) + R/91
+  dV1 <- as.matrix(diag(sapply(parms[["RateVax1"]],mapply,t=t,Smin=Sabove_mat,S=S))) - as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))
+  dV2 <- as.matrix(diag(sapply(parms[["RateVax2"]],mapply,t=t,Smin=Sabove_mat,S=S))) - as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))
+  dIA = parms[["alpha"]]*(as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+    as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+    as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+    as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+    as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) +
+    as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)))- 
+    as.matrix(parms[["RateRecovery"]]*IA) #*as.matrix(1-parms[["RateDeath"]])
+  dIS = (1-parms[["alpha"]])*(as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+                           as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+                           as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+                           as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+                           as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) +
+                           as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)))- 
+    as.matrix(parms[["RateRecovery"]]*IS) #*as.matrix(1-parms[["RateDeath"]])
+  dR = as.matrix(parms[["RateRecovery"]]*IA)*as.matrix(1-parms[["RateDeath"]]) + as.matrix(parms[["RateRecovery"]]*IS)*as.matrix(1-parms[["RateDeath"]]) - R/91
+  dD = as.matrix(parms[["RateRecovery"]]*IA)*as.matrix(parms[["RateDeath"]]) + as.matrix(parms[["RateRecovery"]]*IS)*as.matrix(parms[["RateDeath"]])
+  # remember that you have to have the output in the same order as the model
+  # compartments are at the beginning of the function
+  out=c(dS,dV1,dV2,dIA,dIS,dR,dD)
+  list(out)
+}
+
+#Make population data
+
+#From CDC 12/20/20 and U.S. census 2010 (pop)
+rates_df2 <- data.frame(Age = c("85+","75-84","65-74","50-64","40-49","30-39","18-29","5-17","0-4"))
+rates_df2$incidence <- c(0.05064,0.03147,0.02977,0.03993,0.04543,0.04671,0.05489,0.01944,0.01135)
+rates_df2$death <- c(0.2208333,0.1163648,0.04820289, 0.01267218, 0.003455866, 0.001348748, 0.0004008016, 0.0001028807, 0.0002643172)
+rates_df2$population <- c(5493433, 13061122, 21713429, 58986087, 43038661, 41067277, 50934110, 58316329, 16161090)
+
+
+#From statistica (as of Jul 2019):
+pop_dat <- data.frame(Age = c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85+"),population = c(19.58,10.32+9.87,10.62+10.18,10.75+10.31,11.06+10.57,12+11.5,11.35+11.08,10.88+10.85,9.91+10.01,10.09+10.31,10.09+10.39,10.64+11.23,9.86+10.71,8.2+9.26,6.5+7.53,4.32+5.33,2.68+3.64,2.38+4.23)) 
+
+#Create input vector x. Length is ncompartments * nage groups. Make sure input in order is correct (descending age for each vector that I then make into x)
+
+N_0 <- pop_dat$population*1000000
+S_0 <- pop_dat$population*1000000*0.975
+V1 <- V2 <-  D <-  rep(0, times = length(pop_dat$population))
+IA <- pop_dat$population*1000000*0.0025
+IS <- pop_dat$population*1000000*0.0025
+R <- pop_dat$population*1000000*0.02
+
+inputs <- c(S_0,V1, V2, IA,IS, R, D)
+
+name_temp <- c("S","V1","V2","IA","IS","R","D")
+for (i in 1:length(inputs)){
+  index <- ifelse(i%%18 == 0,18,i%%18)
+  names(inputs)[i] <-  paste(as.character(pop_dat$Age[index]),
+                             case_when(i <= 18 ~ "S",
+                                       i <= 18*2 ~ "V1",
+                                       i <= 18*3 ~ "V2",
+                                       i <= 18*4 ~ "IA",
+                                       i <= 18*5 ~ "IS",
+                                       i <= 18*6 ~ "R",
+                                       i <= 18*7 ~ "D"),
+                             sep = "_")
+}  
+
+#Make Contact Matrix
+C <- contactdata::contact_matrix("US", location = "all") #only up to age 80. Make 80-85 and 85+ the same as 75-80.
+C <- rbind(C,C[16,])
+C <- rbind(C,C[16,])
+C <- cbind(C,C[,16])
+C <- cbind(C,C[,16])
+
+row.names(C)[17] <- "80_85"
+row.names(C)[18] <- "85+"
+colnames(C)[17] <- "80_85"
+colnames(C)[18] <- "85+"
+
+#Now multiply by constant, say 0.5, to account for reduced mixing due to restrictions
+
+C <- distancing_const*C
+
+#find beta
+f <- vector()
+for (i in 1:length(pop_dat$population)) {
+  f[i] <- pop_dat$population[i]/sum(pop_dat$population)
+}
+
+
+M <- C
+for (i in 1:nrow(M)) {
+  for(j in 1:ncol(M)) {
+    M[i,j] = C[i,j]*pop_dat$population[i]/pop_dat$population[j]
+  }
+  
+}
+eig = eigen(M)
+# reverse engineer beta from the R0 and gamma 
+beta = (r_0*(1/7)/max(Re(eig$values)))
+
+#set parameters
+CA <- C
+CS <- 0.1*C
+EfficacyV1 <- Efficacy_V1
+EfficacyV2 <- Efficacy_V2
+RateVax1 <- Vax1_func
+RateVax2 <- Vax2_func
+RateRecovery <- 1/91
+RateDeath <- c(rates_df2[9,"death"], rates_df2[8,"death"], rates_df2[8,"death"], (3*rates_df2[8,"death"]+2*rates_df2[7,"death"])/5, rates_df2[7,"death"], rates_df2[7,"death"], rates_df2[6,"death"],  rates_df2[6,"death"], rates_df2[5,"death"], rates_df2[5,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[3,"death"], rates_df2[3,"death"], rates_df2[2,"death"], rates_df2[2,"death"], rates_df2[1,"death"])
+Alpha <- c(rep(0.701,times =4), .626,.626,.596,.596,.573,.573,.599,.599,.616,.616,rep(.687, times = 4))
+Alpha <- Alpha - 0.35
+
+#from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7409994/#:~:text=Notably%2C%20we%20observed%20a%20U,the%2040%2D49%20age%20group.
+
+parms_list <- list(beta,CA,CS,EfficacyV1,EfficacyV2,RateVax1,RateVax2,RateRecovery,RateDeath,Alpha)
+names(parms_list) <- c("RateTransmission","CA","CS","EfficacyV1","EfficacyV2","RateVax1","RateVax2","RateRecovery","RateDeath","alpha")
+
+
+#Now, run the model
+solutions2 <- deSolve::lsoda(inputs, times = 0:365,func = model2, parms =  parms_list,hmax = 1)
+
+output_df <- data.frame(solutions2)
+
+output_df2 <- output_df %>%
+  tidyr::pivot_longer(cols = -time, names_to = "Group", values_to = "N")%>%
+  tidyr::separate(Group,into = c(NA,"Group"), sep = 1) %>%
+  tidyr::separate(Group,into = c("Age","variable"),sep = "_") %>%
+  dplyr::mutate(variable = case_when(variable == "D" ~ "Deceased",
+                                     variable == "IA" ~ "Infected",
+                                     variable == "IS" ~ "Infected",
+                                     variable == "R" ~ "Recovered",
+                                     variable == "S" ~ "Susceptible",
+                                     variable == "V1" ~ "Vaccine 1",
+                                     variable == "V2" ~ "Vaccine 2"))
+
+total_output <- output_df2 %>%
+  dplyr::group_by(time,variable)%>%
+  dplyr::summarise(Size = sum(N))
+
+#Now Plot
+p1 <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,25,50,75,100,125,150,175,200,225,250,275,300,325),breaks = 10^6*c(0,25,50,75,100,125,150,175,200,225,250,275,300,325)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+#Plot zoomed under 50 mil
+
+p2 <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,5,10,15,20,25,30,35,40,45,50),breaks = 10^6*c(0,5,10,15,20,25,30,35,40,45,50),limits = c(0,50000000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+#Plot zoomed to 10 million
+p2A <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,.5,1,1.5,2,2.5,3,3.5,4,4.5,5),breaks = 10^6*c(0,.5,1,1.5,2,2.5,3,3.5,4,4.5,5),limits = c(0,5000000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+
+age_comp_df <- output_df2 %>%
+  dplyr::mutate(Age_updated = case_when(Age %in% c("0.4","5.9","10.14","15.19")~"0-19",
+                                        Age %in% c("20.24","25.29","30.34","35.39") ~ "20-39",
+                                        Age %in% c("40.44","45.49","50.54","55.59","60.64") ~ "40-64",
+                                        Age %in% c("65.69","70.74") ~ "65-74",
+                                        Age %in% c("75.79","80.84","85.") ~ "75+"))
+
+#Now Plot Deaths only 
+death_df <- age_comp_df %>%
+  dplyr::filter(variable == "Deceased") %>%
+  dplyr::group_by(time)%>%
+  dplyr::summarise(deaths = sum(N))
+
+y_breaks <- if(death_df[death_df$time == 365,"deaths"] < 100000){
+  seq(from=0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 10000 ,by = 10000)
+} else if(death_df[death_df$time == 365,"deaths"] < 250000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 25000, by = 25000)
+} else if(death_df[death_df$time == 365,"deaths"] < 750000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 50000, by = 50000)
+} else if (death_df[death_df$time == 365,"deaths"] < 1200000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 50000, by = 100000)
+} else{
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -5)) + 250000, by = 500000)
+}
+
+label_y <- ifelse(death_df[death_df$time == 365,"deaths"] >= 1200000,"N (Millions)","N (Thousands)")
+
+p3 <- ggplot(death_df, aes(x = time, y = deaths)) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,.25,0.5,0.75,1,1.25,1.5,1.75,2.0,2.25,2.5), breaks = 10^6*c(0,.25,.50,.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50)) +
+  theme_clean()
+
+death_by_age_df <- age_comp_df %>%
+  dplyr::filter(variable == "Deceased") %>%
+  group_by(Age_updated,time)%>%
+  summarise(N_total = sum(N))
+
+p4 <- ggplot(death_by_age_df, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab(as.character(label_y)) + xlab("Days") +
+  scale_y_continuous(labels = sprintf(ifelse(as.character(label_y) == "N (Thousands)","%.0f","%.1f"),y_breaks/(ifelse(as.character(label_y) == "N (Thousands)",1000,1000000))), breaks = y_breaks) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+
+  output <- list(p1,p2,p2A,p3,p4,total_output,solutions2,death_by_age_df)
+  names(output) <- c("plot","plotzoom","plotsuperzoom","deathplot","deathbyageplot","df","raw","death_df_by_age")
+  output
+}
+
+V1 <- function(t,Smin,S){
+  if(Smin >= 1000000 | S == 0){
+    0
+  } else if(Smin < 1000000 & S >= (1000000 - Smin)){
+    1000000 - Smin
+  } else if(Smin < 1000000 & S < (1000000 - Smin)){
+    S
+  }
+}
+
+V2 <- function(t,Smin,S){
+  ifelse(t<50 | Smin == 0, 0,0)
+}
+
+V18 <- function(t,Smin,S){
+  ifelse(S >= 1000000,1000000,S)
+} 
+
+V1_list_final2 <- list(V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V1,V18)
+V2_list_final <- list(V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2, V2)
+
+test1 <- plot_model2(distancing_const = 0.20, 1.05,.95,.70,V1_list_final2,V2_list_final)
+plot1 <- ggplot(test1$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Millions)") + xlab("Time")  +
+  scale_y_continuous(labels = sprintf("%.1f", seq(from = 0, to = 5.5, by = 0.5)), breaks = seq(from = 0, to = 5500000,by = 500000),limits = c(0,5500000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+
+test2 <- plot_model2(distancing_const = 0.20, 1.05,.70,.95,V1_list_final2,V2_list_final)
+plot2 <- ggplot(test2$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Millions)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.1f", seq(from = 0, to = 5.5, by = 0.5)), breaks = seq(from = 0, to = 5500000,by = 500000),limits = c(0,5500000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+
+test3 <- plot_model2(distancing_const = 0.20, 1.05, 0,.95,V1_list_final2,V2_list_final)
+plot3 <- ggplot(test3$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Millions)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.1f", seq(from = 0, to = 5.5, by = 0.5)), breaks = seq(from = 0, to = 5500000,by = 500000),limits = c(0,5500000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+figure1 <- cowplot::plot_grid(plot3,plot2,plot1,ncol = 1, align = "h", labels = c("A. No Vaccine","B. Vaccine 70% Efficacy","C. Vaccine 95% Efficacy"),hjust = 0, label_x = 0.01)
+figure1
+
+```
+
+
+The sizeable difference between the three cases is clear and demonstrates the impact that vaccines can have on the COVID-19 pandemic. Both vaccines cut the cumulative death total for 2021 in half and decreased the rate of deaths significantly. If we have an effective vaccine, the rate of COVID deaths starts to slow in late spring, even without a change in our distancing behavior.
+
+
+```{r, echo = FALSE}
+#D1_change <- test1$df %>%
+  #dplyr::filter(variable == "Deceased")%>%
+  #dplyr::sort(time)
+  #mutate(New_deaths = Size - lag(Size))
+```
+
+
+Okay, the results of this scenario were probably pretty obvious. Now for the fun in scenario 2!
+
+### Scenario 2: Vaccines of Different Efficacies
+
+Now let's suppose that there are two vaccines of different efficacies available. For the approximately 320 million people in the US, we have 150 doses ordered each for Vaccine 1 (95% efficacy) and Vaccine 2 (70% efficacy). In this scenario, we are still limited to 1 million doses per day, but the vaccines can each only be produced at a rate of 500,000 per day (note that if 1 million per day of the 95% could be produced, we would clearly use that on the most vulnerable individuals until we ran out before starting to produce the 70% and using that on whomever remained). We now have the dilemna that inspired this post! 
+
+Clearly we want to vaccinate the oldest and most vulnerable individuals first, but is it better to give them the Vaccine 2 if it means they get vaccinated faster? Let's consider a couple of approaches:
+
+* *Approach A :* Every individual 65 or older will receive Vaccine 1. Vaccine 2 will only be given to people below 65, starting with the oldest (most vulnerable) and moving down age groups. Once the amount of susceptible individuals that are 65 or older drops below 500,000, the rest of the vaccine 1 doses can be allocated to whoever the oldest individuals left are.
+
+* *Approach B:* The oldest individuals will be vaccinated as soon as possible with either vaccine. Every day, the oldest 500,000 people will receive Vaccine 1 and the next oldest 500,000 will receive Vaccine 2.
+
+
+```{r,echo = F, fig.height=8,preview = FALSE,eval=T}
+V1_scen2 <- function(t,Smin,S){
+  if(Smin >= 500000 | S == 0){
+    0
+  } else if(Smin < 500000 & S >= (500000 - Smin)){
+    500000 - Smin
+  } else if(Smin < 500000 & S < (500000 - Smin)){
+    S
+  }
+}
+
+V18_scen2 <- function(t,Smin,S){
+  ifelse(S >= 500000,500000,S)
+} 
+
+V2_scen2 <- function(t, Smin,S){
+  if(Smin >= 1000000 | S == 0){
+    0
+  } else if(Smin < 1000000 & Smin >= 500000 & S >= (1000000 - Smin)){
+    1000000 - Smin # Same as 500000 - (Smin - 500000)
+  } else if(Smin < 1000000 & Smin >= 500000 & S < (1000000 - Smin)){
+    S
+  } else if(Smin < 500000 & S >= (1000000 - Smin)){
+    500000
+  } else if(Smin < 500000 & S < (1000000 - Smin)){
+    S
+  }
+}
+
+V182_scen2 <- function(t,Smin,S){
+  if(S >= 1000000){
+    500000
+  } else if(S < 1000000 & S >= 500000 ){
+    S - 500000
+  } else if(S<1000000 & S < 500000){
+    0
+  }
+} 
+
+Scen2_V1_list <- list(V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V1_scen2,V18_scen2)
+
+Scen2_V2_list <- list(V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V2_scen2,V182_scen2)
+
+test5 <- plot_model2(distancing_const = 0.20, 1.05,.95,.70,Scen2_V1_list,Scen2_V2_list)
+plot5 <- ggplot(test5$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Thousands)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.0f", seq(from = 0, to = 1100, by = 100)), breaks = seq(from = 0, to = 1100000,by = 100000),limits = c(0,1150000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+#Approach 1
+ #Re-Write Function with new measure of how many left 65+
+plot_model3 <- function(distancing_const, r_0, Efficacy_V1,Efficacy_V2,Vax1_func,Vax2_func){
+
+#Adapted from Sherry Towers work http://www.sherrytowers.com/sir_age.R
+model2 <- function(t, x, parms){
+  ncompartment = 7
+  nage = length(x)/ncompartment
+  S   = as.matrix(x[1:nage])
+  V1  = as.matrix(x[(nage+1):(2*nage)])
+  V2  = as.matrix(x[(2*nage+1):(3*nage)])
+  IA  = as.matrix(x[(3*nage+1):(4*nage)])
+  IS  = as.matrix(x[(4*nage+1):(5*nage)])
+  R   = as.matrix(x[(5*nage+1):(6*nage)])
+  D   = as.matrix(x[(6*nage+1):(7*nage)])
+  
+  V1[V1<0] = 0
+  V2[V2<0] = 0
+  IA[IA<0] = 0
+  IS[IS<0] = 0
+  S[S<0] = 0
+  R[R<0] = 0
+  N <-  S+V1+V2+IA+IS+R
+  
+  #Specify Sabove for vaccine rollout
+  Sabove_list <- list()
+  for (i in (2:18)){
+    Sabove_list[[i-1]] <- sum(S[i:18,1])
+  }
+  Sabove_list[[18]] <- Sabove_list[[17]]
+  Sabove_mat <- as.matrix(unlist(Sabove_list))
+  
+  #NEW: Make same matrix but with only below 65s and Specify above 65+ left
+  Sbelow_65list <- list()
+  for (i in (2:13)){
+    Sbelow_65list[[i-1]] <- sum(S[i:13,1])
+  }
+  Sbelow_65list[[13]] <- Sbelow_65list[[12]]
+  Sbelow_65mat <- as.matrix(unlist(Sbelow_65list))
+  Sabove_65 <- Sabove_mat[14,1]
+  
+  dS <- -as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))  - as.matrix(diag(sapply(parms[["RateVax1"]],mapply,t=t,Smin=Sabove_mat,S=S,S65 = Sabove_65))) - as.matrix(diag(sapply(parms[["RateVax2"]],mapply,t=t,Smin=Sabove_mat,S=S,S65 = Sabove_65,S65mat = Sbelow_65mat))) + R/91
+  dV1 <- as.matrix(diag(sapply(parms[["RateVax1"]],mapply,t=t,Smin=Sabove_mat,S=S,S65 = Sabove_65))) - as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))
+  dV2 <- as.matrix(diag(sapply(parms[["RateVax2"]],mapply,t=t,Smin=Sabove_mat,S=S,S65 = Sabove_65,S65mat = Sbelow_65mat))) - as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) - as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N))
+  dIA = parms[["alpha"]]*(as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+    as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+    as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+    as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+    as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) +
+    as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)))- 
+    as.matrix(parms[["RateRecovery"]]*IA) #*as.matrix(1-parms[["RateDeath"]])
+  dIS = (1-parms[["alpha"]])*(as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+                           as.matrix(S*parms[["RateTransmission"]])*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+                           as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) + 
+                           as.matrix(V1*(parms[["RateTransmission"]]*(1-parms[["EfficacyV1"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)) + 
+                           as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CA"]])%*%as.matrix(IA/N)) +
+                           as.matrix(V2*(parms[["RateTransmission"]]*(1-parms[["EfficacyV2"]])))*(as.matrix(parms[["CS"]])%*%as.matrix(IS/N)))- 
+    as.matrix(parms[["RateRecovery"]]*IS) #*as.matrix(1-parms[["RateDeath"]])
+  dR = as.matrix(parms[["RateRecovery"]]*IA)*as.matrix(1-parms[["RateDeath"]]) + as.matrix(parms[["RateRecovery"]]*IS)*as.matrix(1-parms[["RateDeath"]]) - R/91
+  dD = as.matrix(parms[["RateRecovery"]]*IA)*as.matrix(parms[["RateDeath"]]) + as.matrix(parms[["RateRecovery"]]*IS)*as.matrix(parms[["RateDeath"]])
+  # remember that you have to have the output in the same order as the model
+  # compartments are at the beginning of the function
+  out=c(dS,dV1,dV2,dIA,dIS,dR,dD)
+  list(out)
+}
+
+#Make population data
+
+#From CDC 12/20/20 and U.S. census 2010 (pop)
+rates_df2 <- data.frame(Age = c("85+","75-84","65-74","50-64","40-49","30-39","18-29","5-17","0-4"))
+rates_df2$incidence <- c(0.05064,0.03147,0.02977,0.03993,0.04543,0.04671,0.05489,0.01944,0.01135)
+rates_df2$death <- c(0.2208333,0.1163648,0.04820289, 0.01267218, 0.003455866, 0.001348748, 0.0004008016, 0.0001028807, 0.0002643172)
+rates_df2$population <- c(5493433, 13061122, 21713429, 58986087, 43038661, 41067277, 50934110, 58316329, 16161090)
+
+
+#From statistica (as of Jul 2019):
+pop_dat <- data.frame(Age = c("0-4","5-9","10-14","15-19","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85+"),population = c(19.58,10.32+9.87,10.62+10.18,10.75+10.31,11.06+10.57,12+11.5,11.35+11.08,10.88+10.85,9.91+10.01,10.09+10.31,10.09+10.39,10.64+11.23,9.86+10.71,8.2+9.26,6.5+7.53,4.32+5.33,2.68+3.64,2.38+4.23)) 
+
+#Create input vector x. Length is ncompartments * nage groups. Make sure input in order is correct (descending age for each vector that I then make into x)
+
+N_0 <- pop_dat$population*1000000
+S_0 <- pop_dat$population*1000000*0.975
+V1 <- V2 <-  D <-  rep(0, times = length(pop_dat$population))
+IA <- pop_dat$population*1000000*0.0025
+IS <- pop_dat$population*1000000*0.0025
+R <- pop_dat$population*1000000*0.02
+
+inputs <- c(S_0,V1, V2, IA,IS, R, D)
+
+name_temp <- c("S","V1","V2","IA","IS","R","D")
+for (i in 1:length(inputs)){
+  index <- ifelse(i%%18 == 0,18,i%%18)
+  names(inputs)[i] <-  paste(as.character(pop_dat$Age[index]),
+                             case_when(i <= 18 ~ "S",
+                                       i <= 18*2 ~ "V1",
+                                       i <= 18*3 ~ "V2",
+                                       i <= 18*4 ~ "IA",
+                                       i <= 18*5 ~ "IS",
+                                       i <= 18*6 ~ "R",
+                                       i <= 18*7 ~ "D"),
+                             sep = "_")
+}  
+
+#Make Contact Matrix
+C <- contactdata::contact_matrix("US", location = "all") #only up to age 80. Make 80-85 and 85+ the same as 75-80.
+C <- rbind(C,C[16,])
+C <- rbind(C,C[16,])
+C <- cbind(C,C[,16])
+C <- cbind(C,C[,16])
+
+row.names(C)[17] <- "80_85"
+row.names(C)[18] <- "85+"
+colnames(C)[17] <- "80_85"
+colnames(C)[18] <- "85+"
+
+#Now multiply by constant, say 0.5, to account for reduced mixing due to restrictions
+
+C <- distancing_const*C
+
+#find beta
+f <- vector()
+for (i in 1:length(pop_dat$population)) {
+  f[i] <- pop_dat$population[i]/sum(pop_dat$population)
+}
+
+
+M <- C
+for (i in 1:nrow(M)) {
+  for(j in 1:ncol(M)) {
+    M[i,j] = C[i,j]*pop_dat$population[i]/pop_dat$population[j]
+  }
+  
+}
+eig = eigen(M)
+# reverse engineer beta from the R0 and gamma 
+beta = (r_0*(1/7)/max(Re(eig$values)))
+
+#set parameters
+CA <- C
+CS <- 0.1*C
+EfficacyV1 <- Efficacy_V1
+EfficacyV2 <- Efficacy_V2
+RateVax1 <- Vax1_func
+RateVax2 <- Vax2_func
+RateRecovery <- 1/91
+RateDeath <- c(rates_df2[9,"death"], rates_df2[8,"death"], rates_df2[8,"death"], (3*rates_df2[8,"death"]+2*rates_df2[7,"death"])/5, rates_df2[7,"death"], rates_df2[7,"death"], rates_df2[6,"death"],  rates_df2[6,"death"], rates_df2[5,"death"], rates_df2[5,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[3,"death"], rates_df2[3,"death"], rates_df2[2,"death"], rates_df2[2,"death"], rates_df2[1,"death"])
+Alpha <- c(rep(0.701,times =4), .626,.626,.596,.596,.573,.573,.599,.599,.616,.616,rep(.687, times = 4))
+Alpha <- Alpha - 0.35
+
+#from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7409994/#:~:text=Notably%2C%20we%20observed%20a%20U,the%2040%2D49%20age%20group.
+
+parms_list <- list(beta,CA,CS,EfficacyV1,EfficacyV2,RateVax1,RateVax2,RateRecovery,RateDeath,Alpha)
+names(parms_list) <- c("RateTransmission","CA","CS","EfficacyV1","EfficacyV2","RateVax1","RateVax2","RateRecovery","RateDeath","alpha")
+
+
+#Now, run the model
+solutions2 <- deSolve::lsoda(inputs, times = 0:365,func = model2, parms =  parms_list,hmax = 1)
+
+output_df <- data.frame(solutions2)
+
+output_df2 <- output_df %>%
+  tidyr::pivot_longer(cols = -time, names_to = "Group", values_to = "N")%>%
+  tidyr::separate(Group,into = c(NA,"Group"), sep = 1) %>%
+  tidyr::separate(Group,into = c("Age","variable"),sep = "_") %>%
+  dplyr::mutate(variable = case_when(variable == "D" ~ "Deceased",
+                                     variable == "IA" ~ "Infected",
+                                     variable == "IS" ~ "Infected",
+                                     variable == "R" ~ "Recovered",
+                                     variable == "S" ~ "Susceptible",
+                                     variable == "V1" ~ "Vaccine 1",
+                                     variable == "V2" ~ "Vaccine 2"))
+
+total_output <- output_df2 %>%
+  dplyr::group_by(time,variable)%>%
+  dplyr::summarise(Size = sum(N))
+
+#Now Plot
+p1 <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,25,50,75,100,125,150,175,200,225,250,275,300,325),breaks = 10^6*c(0,25,50,75,100,125,150,175,200,225,250,275,300,325)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+#Plot zoomed under 50 mil
+
+p2 <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,5,10,15,20,25,30,35,40,45,50),breaks = 10^6*c(0,5,10,15,20,25,30,35,40,45,50),limits = c(0,50000000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+#Plot zoomed to 10 million
+p2A <- ggplot(total_output, aes(x = time, y = Size, colour = as.factor(variable))) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,.5,1,1.5,2,2.5,3,3.5,4,4.5,5),breaks = 10^6*c(0,.5,1,1.5,2,2.5,3,3.5,4,4.5,5),limits = c(0,5000000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean()
+
+
+age_comp_df <- output_df2 %>%
+  dplyr::mutate(Age_updated = case_when(Age %in% c("0.4","5.9","10.14","15.19")~"0-19",
+                                        Age %in% c("20.24","25.29","30.34","35.39") ~ "20-39",
+                                        Age %in% c("40.44","45.49","50.54","55.59","60.64") ~ "40-64",
+                                        Age %in% c("65.69","70.74") ~ "65-74",
+                                        Age %in% c("75.79","80.84","85.") ~ "75+"))
+
+#Now Plot Deaths only 
+death_df <- age_comp_df %>%
+  dplyr::filter(variable == "Deceased") %>%
+  dplyr::group_by(time)%>%
+  dplyr::summarise(deaths = sum(N))
+
+y_breaks <- if(death_df[death_df$time == 365,"deaths"] < 100000){
+  seq(from=0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 10000 ,by = 10000)
+} else if(death_df[death_df$time == 365,"deaths"] < 250000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 25000, by = 25000)
+} else if(death_df[death_df$time == 365,"deaths"] < 750000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 50000, by = 50000)
+} else if (death_df[death_df$time == 365,"deaths"] < 1000000){
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -3)) + 50000, by = 100000)
+} else{
+  seq(from = 0, to = as.numeric(round(death_df[death_df$time == 365,"deaths"],digits = -5)) + 250000, by = 500000)
+}
+
+label_y <- ifelse(death_df[death_df$time == 365,"deaths"] >= 1000000,"N (Millions)","N (Thousands)")
+
+p3 <- ggplot(death_df, aes(x = time, y = deaths)) +
+  geom_line(size = 1) +
+  scale_color_jama(name = "Group") + ylab("N (millions)") + xlab("Days") +
+  scale_y_continuous(labels = c(0,.25,0.5,0.75,1,1.25,1.5,1.75,2.0,2.25,2.5), breaks = 10^6*c(0,.25,.50,.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50)) +
+  theme_clean()
+
+death_by_age_df <- age_comp_df %>%
+  dplyr::filter(variable == "Deceased") %>%
+  group_by(Age_updated,time)%>%
+  summarise(N_total = sum(N))
+
+p4 <- ggplot(death_by_age_df, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab(as.character(label_y)) + xlab("Days") +
+  scale_y_continuous(labels = sprintf(ifelse(as.character(label_y) == "N (Thousands)","%.0f","%.1f"),y_breaks/(ifelse(as.character(label_y) == "N (Thousands)",1000,1000000))), breaks = y_breaks) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+
+  output <- list(p1,p2,p2A,p3,p4,total_output,solutions2,death_by_age_df)
+  names(output) <- c("plot","plotzoom","plotsuperzoom","deathplot","deathbyageplot","df","raw","death_df_by_age")
+  output
+}
+
+V1_scen1 <- function(t,Smin,S,S65){
+  if(Smin >= 500000 | S == 0){
+    0
+  } else if(Smin < 500000 & S >= (500000 - Smin)){
+    500000 - Smin
+  } else if(Smin < 500000 & S < (500000 - Smin)){
+    S
+  }
+}
+
+V18_scen1 <- function(t,Smin,S,S65){
+  ifelse(S >= 500000,500000,S)
+} 
+
+V2_scen1_above65 <- function(t,Smin,S,S65,S65mat){
+  0
+} 
+
+V2_scen1_under65 <- function(t, Smin,S,S65,S65mat){
+  if(S65 >= 500000){
+    if(S65mat >= 500000 | S == 0){
+    0
+    } else if(S65mat < 500000 & S >= (500000 - S65mat)){
+    500000 - S65mat
+    } else if(S65mat < 500000 & S < (500000 - S65mat)){
+    S
+    }
+  } else if(S65 <500000){
+    if(Smin >= 1000000 | S == 0){
+    0
+    } else if(Smin < 1000000 & Smin >= 500000 & S >= (1000000 - Smin)){
+    1000000 - Smin # Same as 500000 - (Smin - 500000)
+    } else if(Smin < 1000000 & Smin >= 500000 & S < (1000000 - Smin)){
+    S
+    } else if(Smin < 500000 & S >= (1000000 - Smin)){
+    500000
+    } else if(Smin < 500000 & S < (1000000 - Smin)){
+    S
+    }
+  }  
+}
+
+V132_scen1 <- function(t,Smin,S,S65,S65mat){
+  if(S65 >= 500000){
+    if(S >= 500000){
+      500000
+    } else if(S < 500000){
+      S
+    } 
+  } else if (S65 <= 500000) {
+    if(S >= (1000000-S65)){
+      500000
+    } else if(S < (1000000-S65)){
+      S
+    } 
+  }
+} 
+
+Scen1_V1_list <- list(V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V1_scen1,V18_scen1)
+
+Scen1_V2_list <- list(V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V2_scen1_under65,V132_scen1,V2_scen1_above65,V2_scen1_above65,V2_scen1_above65,V2_scen1_above65,V2_scen1_above65)
+
+test4 <- plot_model3(distancing_const = 0.20, 1.05,.95,.70,Scen1_V1_list,Scen1_V2_list)
+plot4 <- ggplot(test4$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Thousands)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.0f", seq(from = 0, to = 1100, by = 100)), breaks = seq(from = 0, to = 1100000,by = 100000),limits = c(0,1150000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+figure2 <- cowplot::plot_grid(plot4,plot5,ncol = 1, align = "h", labels = c("A. Deaths Under Approach A","B. Deaths Under Approach B"),hjust = 0, label_x = 0.01)
+figure2
+
+```
+
+
+Based on our model, approach A will save approximately 200,000 more lives overall than approach B. Almost 300,000 lives are predicted to be saved in the age 65+ category, although approach 1 results in more young deaths. This finding suggests that if our goal is to save the most lives, vulnerable individuals need to be vaccinated with an effective vaccine, even if that means it is done at a slower rate. 
+
+But is it really this simple? Remember that the figure above is based on a Vaccine 1 with 95% efficacy and a Vaccine 2 with 70% efficacy. But what if the difference in efficacies is smaller? The figure below compares the two approaches when Vaccine 2 has an 90% efficacy.
+
+
+```{r,fig.height = 8,eval=T,preview = F}
+test6 <- plot_model3(distancing_const = 0.20, 1.05,.95,.90,Scen1_V1_list,Scen1_V2_list)
+plot6 <- ggplot(test6$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Thousands)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.0f", seq(from = 0, to = 750, by = 50)), breaks = seq(from = 0, to = 750000,by = 50000),limits = c(0,750000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+ 
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+test7 <- plot_model2(distancing_const = 0.20, 1.05,.95,.90,Scen2_V1_list,Scen2_V2_list)
+plot7 <- ggplot(test7$death_df_by_age, aes(x = time, y = N_total,color = Age_updated,fill = Age_updated)) +
+  geom_area(alpha = 0.5, position = "stack",stat = "identity") +
+  theme(plot.margin = unit(c(10,5.5,5.5,5.5),"cm"))+
+  geom_line(position = "stack",size = 1) +
+  scale_color_jama(name = "Age") +
+  scale_fill_jama(name = "Age") + ylab("Cumulative Deaths (Thousands)") + xlab("Time") +
+  scale_y_continuous(labels = sprintf("%.0f", seq(from = 0, to = 750, by = 50)), breaks = seq(from = 0, to = 750000,by = 50000),limits = c(0,750000)) +
+  scale_x_continuous(labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),breaks = c(0,31,31+28,31+28+31,31+28+31+30,31+28+31+30+31,31+28+31+30+31+30,31+28+31+30+31+30+31,31+28+31+30+31+30+31+31,31+28+31+30+31+30+31+31+30,31+28+31+30+31+30+31+31+30+31,31+28+31+30+31+30+31+31+30+31+30))+ 
+  theme_clean() +
+  theme(plot.margin =unit(c(25,5.5,5.5,5.5), "pt"))
+
+figure3 <- cowplot::plot_grid(plot6,plot7,ncol = 1, align = "h", labels = c("A. Deaths Under Approach A","B. Deaths Under Approach B"),hjust = 0, label_x = 0.01)
+figure3
+```
+
+
+Under these conditions, approach B saves more lives overall. This finding is logical when we consider that approach B would clearly be optimal if both Vaccine 1 and Vaccine 2 had the same efficacy. Putting of vaccinations of vulnerable individuals is not worth it if the two vaccines have similar efficacies.
+
+So at what Vaccine 2 efficacy does approach B overcome approach A as optimal? At this point of interest, the impact of a less effective vaccine is approximately equal to the impact of a slower rate of administration. According to our model, the two approaches result in an approximately equal number of deaths when Vaccine 2 has an 85% efficacy. Below 85%, more lives are saved with approach A, but approach B leads to more lives saved when Vaccine 2 has an efficacy above 85%. 
+
+## Conclusion
+
+While the specific numbers predicted by our model will almost certainly vary from the real-life course of COVID-19 in the U.S. in 2021, the most important takeaway from this post is the vital role that vaccine efficacy and rollout strategies will play in determining the pandemic's course. If and when multiple vaccines become available, policy makers must keep the importance of vaccine efficacy differences in mind as they seek to develop vaccine allocation approaches that maximize lives saved. If a new vaccine has a significantly lower efficacy (< 85% according to our model) compared to the 95% efficacy of Pfizer and Moderna's, it will be optimal to start administering it to low-risk individuals right away. If the efficacy is similar to 95% (> 85% according to our model), the best strategy is to use it to ensure that the oldest individuals get vaccinated as soon as possible. 
+
+## Model Extensions
+The model framework set up in this post has the potential to become even more reflective of the real-life pandemic with some extra considerations. The true contact matrix and related transmission rate $\beta$ are changing constantly as a result of developing societal perceptions of the virus, individual behaviors, and government policies. A time-dependent contact matrix and $\beta_t$ would allow the model to reflect some of these dymanics. Another possible extension of the model could include more demographic classes that take into account other factors besides age such as job or location.
+
+As a final point, this model is deterministic in that its projections are based on exact parameters without accounting for randomness. Despite this limitation, deterministic models are still used [widely](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6001967/) throughout epidemiology and have had some important applications. I am hoping to play around with a stochastic model that incorporates some of these other ideas in the future! 
+
+Also, let me know if there are any other scenarios I should explore. I am hoping to make a Shiny app that makes any scenario possible!
+
+## Appendix: Notes on Parameters and Initial Conditions
+
+* The rate of death once infected with COVID in each of the following age groups is (taken as (deaths per 100,000)/(incidence per 100,000) from [CDC](https://www.cdc.gov/vaccines/acip/meetings/downloads/slides-2020-12/slides-12-20/02-COVID-Dooling.pdf) estimates. Assumes number of patients re-infected is minimal.):
+* The initial conditions for the model were estimated from [Statistica](https://www.statista.com/statistics/241488/population-of-the-us-by-sex-and-age/) population data and [New York Times COVID-19 data](https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html) as of January 3, 2021. They were:
+
+
+```{r,echo = F, preview = F}
+pop_dat <- data.frame(i = seq(1:18),Age = c("0-4","5-9","10-14","15-19","20-25","26-30","31-35","36-40","41-45","46-50","51-55","56-60","61-65","66-70","71-75","76-80","81-85","85+"),population = c(19.58,10.32+9.87,10.62+10.18,10.75+10.31,11.06+10.57,12+11.5,11.35+11.08,10.88+10.85,9.91+10.01,10.09+10.31,10.09+10.39,10.64+11.23,9.86+10.71,8.2+9.26,6.5+7.53,4.32+5.33,2.68+3.64,2.38+4.23))
+pop_dat$RateDeath <- sprintf("%.5f",c(rates_df2[9,"death"], rates_df2[8,"death"], rates_df2[8,"death"], (3*rates_df2[8,"death"]+2*rates_df2[7,"death"])/5, rates_df2[7,"death"], rates_df2[7,"death"], rates_df2[6,"death"],  rates_df2[6,"death"], rates_df2[5,"death"], rates_df2[5,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[4,"death"], rates_df2[3,"death"], rates_df2[3,"death"], rates_df2[2,"death"], rates_df2[2,"death"], rates_df2[1,"death"]))
+
+pop_dat2 <- data.frame(Age = pop_dat$Age)
+pop_dat2$N_0 <- pop_dat$population
+pop_dat2$S_0 <- sprintf("%.2f",pop_dat$population*0.975)
+pop_dat2$V2 <- pop_dat2$V1  <-  rep(0, times = length(pop_dat$population))
+pop_dat2$IA <- sprintf("%.2f",pop_dat$population*0.0025)
+pop_dat2$IS <- sprintf("%.2f",pop_dat$population*0.0025)
+pop_dat2$R <- sprintf("%.2f",pop_dat$population*0.02)
+pop_dat2$D <- rep(0, times = 18)
+
+names(pop_dat2) <- c("Age","Population (in Millions)","S","V1","V2","IA","IS","R","D")
+
+table1 <- flextable(pop_dat2)
+table1 <- italic(table1, i = 1, italic = T, part = "header")
+table1 <- footnote(table1,value = as_paragraph("All numbers are in millions"), ref_symbols = " ")
+autofit(table1)
+```
+
+
+* The models also assumes that:
+  + The death and infection rates published in the CDC [ACIP Report](https://www.cdc.gov/vaccines/acip/meetings/downloads/slides-2020-12/slides-12-20/02-COVID-Dooling.pdf) on 12/20/20 are accurate and uniform within their defined age groups.
+  + The vaccine is effective at preventing illness and transmission.
+  + The contacts made by individuals are reduced by a constant multiplier as a result of social distancing guidelines. The nature and proportional allocation among age classes does not change. This is probably not true, but I am not aware of studies that have quantified the adjusted contact rates. 
+  + None of the parameters change over time. This is not true, as I assume/hope more extreme measures would be taken to slow the growth if it exploded.
+  + Stochastic effects do not affect the course of the pandemic.
+  
+## References
+* Morris SE (2020). shinySIR: Interactive Plotting for Mathematical Models of Infectious Disease Spread. R package version 0.1.2, https://github.com/SineadMorris/shinySIR.
+* Prem K, Cook AR, Jit M (2017) Projecting social contact matrices in 152 countries using contact surveys and demographic data.
+* Towers, S. (2012, December 11). SIR Model with Age Classes. Retrieved January 02, 2021, from http://sherrytowers.com/2012/12/11/sir-model-with-age-classes/
+* Towers, S., & Feng, Z. (2012). Social contact patterns and control strategies for influenza in the elderly. Mathematical biosciences, 240(2), 241-249.
+* *Computing Note:* All analysis was performed in R statistical software. The package deSolve was used to solve each system of differential equations. Plots were created with ggplot2. All code used in this analysis is available [here](https://github.com/yangjasp/distill_site/tree/main/_posts/2020-12-28-what-if-some-vaccines-are-more-effective-than-others). 
