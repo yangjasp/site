@@ -2,7 +2,7 @@
 title: "Rediscovering a fun probability problem"
 author: "Jasper Yang"
 date: 06-25-2023
-categories: [sports]
+categories: 
 preview: NULL
 image: "Figure2.png"
 ---
