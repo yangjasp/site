@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://yangjasp.github.io/Quarto_site/posts/vaccine_modelling_0/index.html</loc>
+    <lastmod>2023-06-26T18:13:13.405Z</lastmod>
+  </url>
+  <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/luck_in_sports1/index.html</loc>
-    <lastmod>2023-06-26T11:31:07.545Z</lastmod>
+    <lastmod>2023-06-26T18:13:14.555Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/probable_sequences/index.html</loc>
-    <lastmod>2023-06-26T11:31:08.284Z</lastmod>
+    <lastmod>2023-06-26T18:13:15.312Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/vaccine_modelling/VaccineModelling.html</loc>
-    <lastmod>2023-06-26T11:31:09.589Z</lastmod>
+    <lastmod>2023-06-26T18:13:16.511Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/covid19_bayes/index.html</loc>
-    <lastmod>2023-06-26T11:31:11.040Z</lastmod>
+    <lastmod>2023-06-26T18:13:17.256Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/p_values_as_bets/index.html</loc>
-    <lastmod>2023-06-26T11:31:12.087Z</lastmod>
+    <lastmod>2023-06-26T18:13:18.095Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/index.html</loc>
-    <lastmod>2023-06-26T11:31:12.546Z</lastmod>
+    <lastmod>2023-06-26T18:13:18.474Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/about.html</loc>
-    <lastmod>2023-06-26T11:31:13.344Z</lastmod>
+    <lastmod>2023-06-26T18:13:18.813Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/blog.html</loc>
-    <lastmod>2023-06-26T11:31:14.092Z</lastmod>
+    <lastmod>2023-06-26T18:13:19.551Z</lastmod>
   </url>
 </urlset>
