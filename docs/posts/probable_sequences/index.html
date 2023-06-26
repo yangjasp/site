@@ -210,15 +210,19 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="Figure2.png" class="Figure2 img-fluid"> Note the distinct differences. A break in the sequence will always knock you back to state 0 for AAA, but for AJJ, you never return to state 0 once you leave it because breaking the sequence after it has started only occurs when an A, the first card in the sequence, is drawn.</p>
 <p>The expected number of draws until state 3, AAA, is reached can be found by solving the following system of equations, which follow directly from the diagram:</p>
 <p><span class="math display">\[
-E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_0 + 1)\\
+E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)
+\]</span> <span class="math display">\[
+E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_0 + 1)
+\]</span> <span class="math display">\[
+E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_0 + 1)
 \]</span> where <span class="math inline">\(E_i\)</span> is the expected time until state 3, AAA, is reached given that the chain is currently in state <span class="math inline">\(i\)</span>. Clearly <span class="math inline">\(E_3 = 0\)</span>, so this is a system of three equations with three unknowns. Solving for <span class="math inline">\(E_0\)</span> gives 14.</p>
 <p>In contrast, the system of equations for AJJ is:</p>
 <p><span class="math display">\[
-E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_1 + 1)\\
-E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_1 + 1)\\
+E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)
+\]</span> <span class="math display">\[
+E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_1 + 1)
+\]</span> <span class="math display">\[
+E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_1 + 1)
 \]</span></p>
 <p>Now, solving for <span class="math inline">\(E_0\)</span> gives 8. If you are looking for AJA, the Markov diagram and corresponding system of equations give 10 as the expected number of draws.</p>
 </section>

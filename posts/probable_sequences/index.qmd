@@ -72,18 +72,26 @@ Note the distinct differences. A break in the sequence will always knock you bac
 The expected number of draws until state 3, AAA, is reached can be found by solving the following system of equations, which follow directly from the diagram:
 
 $$
-E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_0 + 1)\\
+E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)
+$$
+$$
+E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_0 + 1)
+$$
+$$
+E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_0 + 1)
 $$
 where $E_i$ is the expected time until state 3, AAA, is reached given that the chain is currently in state $i$. Clearly $E_3 = 0$, so this is a system of three equations with three unknowns. Solving for $E_0$ gives 14. 
 
 In contrast, the system of equations for AJJ is:
 
 $$
-E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)\\
-E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_1 + 1)\\
-E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_1 + 1)\\
+E_0 = \frac{1}{2}(E_1 + 1) + \frac{1}{2}(E_0 + 1)
+$$
+$$
+E_1 = \frac{1}{2}(E_2 + 1) + \frac{1}{2}(E_1 + 1)
+$$
+$$
+E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_1 + 1)
 $$
 
 Now, solving for $E_0$ gives 8. If you are looking for AJA, the Markov diagram and corresponding system of equations give 10 as the expected number of draws. 
