@@ -1,5 +1,5 @@
 ---
-title: "Modeling COVID-19 and Vaccine Rollout Strategies"
+title: "Modeling COVID-19 Vaccine Rollout Strategies"
 preview: NULL
 author: "Jasper Yang"
 date: 12-28-2020
