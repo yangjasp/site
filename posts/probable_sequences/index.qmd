@@ -20,11 +20,11 @@ This "paradox" does not have a specific name as far as we can tell, but it is so
 
 ## Arriving at the problem
 
-Our confusion began during a game of Dirty Clubs on a Northern Rail train from London to Liverpool. During one of our typical post-hand discussions about optimal strategies, I posed a question to my friend (a medical student): what is the expected number of cards until the sequence "Ace, Jack, Jack" appears in a *with-replacement* deck [^1]. To make things even simpler, we started by only considering draws from an eight-card deck of Jacks and Aces.
+During a game of Dirty Clubs on a Northern Rail train from London to Liverpool, two friends and I came up with a seemingly straightforward question pertaining to a debate about optimal strategy: what is the expected number of cards until the sequence "Ace, Jack, Jack" appears in a *with-replacement* deck [^1]. To make things even simpler, we started by only considering draws from an eight-card deck of Jacks and Aces.
 
-My friend's approach was to draw a tree diagram to a reasonable number of draws and look for a pattern. Interested in where it was going, my other friend (a soon-to-be applied math grad student) and I jumped in. Things started to get complicated, so I suggested that we just consider AAA (Ace, Ace, Ace) rather than AJJ (Ace, Jack, Jack), and they quickly agreed, knowing that the probability of flipping each of these sequences at a given time is equally $\frac{1}{8}$. Our initial attempts to write the expectation as an infinite sum were unsuccessful, so we eventually made use of my brief experience with stochastic processes and used the Markov chain expected waiting time strategy to arrive at an answer of 14 flips. 
+Our initial approach was to draw a tree diagram to a reasonable number of draws and look for a pattern. To make things as simple as possible, we decided to consider AAA (Ace, Ace, Ace) rather than AJJ (Ace, Jack, Jack), knowing that the probability of flipping each of these sequences at a given time is equally $\frac{1}{8}$. Our initial attempts to write the expectation as an infinite sum were unsuccessful, so we eventually made use of my brief experience with stochastic processes and used the Markov chain expected waiting time strategy to arrive at an answer of 14 flips. 
 
-Something immediately felt off about that answer, as 14 flips seemed far too high for a string of just three cards. We re-derived and re-solved the system of equations twice, but kept getting 14. In the end, we decided that it was the unsatisfactory, yet correct, answer.
+Something immediately felt off about that answer - 14 flips seemed far too high for a string of just three cards. We re-derived and re-solved the system of equations twice, but kept getting 14. In the end, we decided that it was the unsatisfactory, yet correct, answer.
 
 Still unsatisfied a few days later, we revisited the problem and realized that both our mathematical approach and our guts were half right, but neither was fully correct. The reason was extremely interesting.
 
@@ -42,7 +42,7 @@ It was with this idea in mind that my friends and I thought that waiting for the
 Tree diagrams are useful ways to visualize probabilities of (short) sequences of discrete events. It was my friend's return to our diagram up to 4 card draws that first revealed the paradox. This diagram is pictured below:
 
 ![](Figure1.png)
-The key point here is to remember that once a sequence has been reached, the tree stops. Hence why the top A, which would be the fourth A in AAAA, is not circled in red. This A will never be reached if we are looking for AAA, so we have $$P(\text{reach AAA in 4 or less draws}) = P(\text{reach AAA on 3rd}) + P(\text{reach AAA on 4th}) = \frac{1}{8} + \frac{7}{8}\cdot\frac{1}{14} = \frac{3}{16}.$$ 
+The key realization here is that the tree stops as soon as the sequence has been reached. Hence why the top A, which would be the fourth A in AAAA, is not circled in red. This A will never be reached if we are looking for AAA, so we have $$P(\text{reach AAA in 4 or less draws}) = P(\text{reach AAA on 3rd}) + P(\text{reach AAA on 4th}) = \frac{1}{8} + \frac{7}{8}\cdot\frac{1}{14} = \frac{3}{16}.$$ 
 
 On the other hand, AJJ can't occur after another AJJ within four draws. This gives
 
@@ -58,7 +58,7 @@ A second approach to this problem is to consider a Markov chain with states corr
 * State 2: The first two card of the sequence have just been drawn. If the next draw is what we are looking for, the game will end in one turn.
 * State 3: The absorbing final state. This is reached when the desired sequence has just been drawn.
 
-Using 0.5 as the probability for drawing A or J on every turn, the transition diagrams for AAA and AJJ are: 
+Using 0.5 as the probability for drawing A or J on each turn, the transition diagrams for AAA and AJJ are: 
 
 <style>
 .Figure2 {
@@ -98,7 +98,7 @@ Now, solving for $E_0$ gives 8. If you are looking for AJA, the Markov diagram a
 
 ## Now we know...
 
-After working out these details, our assumption that AAA was obviously the same as AJJ felt like a silly mistake. As it turns out, [a number of researchers](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2627354) have fallen victim to similar fallacies in the past, including Amos Tversky himself in a [1985 paper](https://psycnet.apa.org/record/1986-05021-001) about the hot-hand in basketball. So I guess the takeway is that probability is hard...
+After working out these details, our assumption that AAA was obviously the same as AJJ felt like a silly mistake. As it turns out, [a number of researchers](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2627354) have fallen victim to similar fallacies in the past, including Amos Tversky himself in a [1985 paper](https://psycnet.apa.org/record/1986-05021-001) about the hot-hand in basketball. Probability is hard!
 
 
 [^1]: As every Midwesterner should know, Ace, Jack, Jack is a good sequence of cards. 

@@ -173,9 +173,9 @@ ul.task-list li input[type="checkbox"] {
 <p>This “paradox” does not have a specific name as far as we can tell, but it is solidly documented and applies to many problems involving sequences of events. We had a lot of fun discovering it nonetheless, so I decided to write about thinking process that led us to it.</p>
 <section id="arriving-at-the-problem" class="level2">
 <h2 class="anchored" data-anchor-id="arriving-at-the-problem">Arriving at the problem</h2>
-<p>Our confusion began during a game of Dirty Clubs on a Northern Rail train from London to Liverpool. During one of our typical post-hand discussions about optimal strategies, I posed a question to my friend (a medical student): what is the expected number of cards until the sequence “Ace, Jack, Jack” appears in a <em>with-replacement</em> deck <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. To make things even simpler, we started by only considering draws from an eight-card deck of Jacks and Aces.</p>
-<p>My friend’s approach was to draw a tree diagram to a reasonable number of draws and look for a pattern. Interested in where it was going, my other friend (a soon-to-be applied math grad student) and I jumped in. Things started to get complicated, so I suggested that we just consider AAA (Ace, Ace, Ace) rather than AJJ (Ace, Jack, Jack), and they quickly agreed, knowing that the probability of flipping each of these sequences at a given time is equally <span class="math inline">\(\frac{1}{8}\)</span>. Our initial attempts to write the expectation as an infinite sum were unsuccessful, so we eventually made use of my brief experience with stochastic processes and used the Markov chain expected waiting time strategy to arrive at an answer of 14 flips.</p>
-<p>Something immediately felt off about that answer, as 14 flips seemed far too high for a string of just three cards. We re-derived and re-solved the system of equations twice, but kept getting 14. In the end, we decided that it was the unsatisfactory, yet correct, answer.</p>
+<p>During a game of Dirty Clubs on a Northern Rail train from London to Liverpool, two friends and I came up with a seemingly straightforward question pertaining to a debate about optimal strategy: what is the expected number of cards until the sequence “Ace, Jack, Jack” appears in a <em>with-replacement</em> deck <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. To make things even simpler, we started by only considering draws from an eight-card deck of Jacks and Aces.</p>
+<p>Our initial approach was to draw a tree diagram to a reasonable number of draws and look for a pattern. To make things as simple as possible, we decided to consider AAA (Ace, Ace, Ace) rather than AJJ (Ace, Jack, Jack), knowing that the probability of flipping each of these sequences at a given time is equally <span class="math inline">\(\frac{1}{8}\)</span>. Our initial attempts to write the expectation as an infinite sum were unsuccessful, so we eventually made use of my brief experience with stochastic processes and used the Markov chain expected waiting time strategy to arrive at an answer of 14 flips.</p>
+<p>Something immediately felt off about that answer - 14 flips seemed far too high for a string of just three cards. We re-derived and re-solved the system of equations twice, but kept getting 14. In the end, we decided that it was the unsatisfactory, yet correct, answer.</p>
 <p>Still unsatisfied a few days later, we revisited the problem and realized that both our mathematical approach and our guts were half right, but neither was fully correct. The reason was extremely interesting.</p>
 </section>
 <section id="the-solution" class="level2">
@@ -188,7 +188,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="viewpoint-1-tree-diagrams" class="level3">
 <h3 class="anchored" data-anchor-id="viewpoint-1-tree-diagrams">Viewpoint 1: Tree Diagrams</h3>
 <p>Tree diagrams are useful ways to visualize probabilities of (short) sequences of discrete events. It was my friend’s return to our diagram up to 4 card draws that first revealed the paradox. This diagram is pictured below:</p>
-<p><img src="Figure1.png" class="img-fluid"> The key point here is to remember that once a sequence has been reached, the tree stops. Hence why the top A, which would be the fourth A in AAAA, is not circled in red. This A will never be reached if we are looking for AAA, so we have <span class="math display">\[P(\text{reach AAA in 4 or less draws}) = P(\text{reach AAA on 3rd}) + P(\text{reach AAA on 4th}) = \frac{1}{8} + \frac{7}{8}\cdot\frac{1}{14} = \frac{3}{16}.\]</span></p>
+<p><img src="Figure1.png" class="img-fluid"> The key realization here is that the tree stops as soon as the sequence has been reached. Hence why the top A, which would be the fourth A in AAAA, is not circled in red. This A will never be reached if we are looking for AAA, so we have <span class="math display">\[P(\text{reach AAA in 4 or less draws}) = P(\text{reach AAA on 3rd}) + P(\text{reach AAA on 4th}) = \frac{1}{8} + \frac{7}{8}\cdot\frac{1}{14} = \frac{3}{16}.\]</span></p>
 <p>On the other hand, AJJ can’t occur after another AJJ within four draws. This gives</p>
 <p><span class="math display">\[P(\text{reach AJJ in 4 or less draws}) = P(\text{reach AJJ on 3rd}) + P(\text{reach AJJ in 4th}) = \frac{1}{8} + \frac{7}{8}\cdot\frac{2}{14} = \frac{4}{16}.\]</span> Essentially, AAA is less likely because two of the chances to get AAA overlap. This is not the case for AJJ, so you actually have more chances in the first four draws to get AJJ. If you are looking for AJJ and the first card is an A but the second is also an A, which breaks the sequence, you still have another chance to get AJJ in four draws because the breaking card is actually the first in the sequence. If you are looking for AAA, a breaking Jack on the second draw eliminates any chance of getting the sequence in four or less.</p>
 </section>
@@ -201,7 +201,7 @@ ul.task-list li input[type="checkbox"] {
 <li>State 2: The first two card of the sequence have just been drawn. If the next draw is what we are looking for, the game will end in one turn.</li>
 <li>State 3: The absorbing final state. This is reached when the desired sequence has just been drawn.</li>
 </ul>
-<p>Using 0.5 as the probability for drawing A or J on every turn, the transition diagrams for AAA and AJJ are:</p>
+<p>Using 0.5 as the probability for drawing A or J on each turn, the transition diagrams for AAA and AJJ are:</p>
 <style>
 .Figure2 {
   padding: 10px;
@@ -229,7 +229,7 @@ E_2 = \frac{1}{2}(E_3 + 1) + \frac{1}{2}(E_1 + 1)
 </section>
 <section id="now-we-know" class="level2">
 <h2 class="anchored" data-anchor-id="now-we-know">Now we know…</h2>
-<p>After working out these details, our assumption that AAA was obviously the same as AJJ felt like a silly mistake. As it turns out, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2627354">a number of researchers</a> have fallen victim to similar fallacies in the past, including Amos Tversky himself in a <a href="https://psycnet.apa.org/record/1986-05021-001">1985 paper</a> about the hot-hand in basketball. So I guess the takeway is that probability is hard…</p>
+<p>After working out these details, our assumption that AAA was obviously the same as AJJ felt like a silly mistake. As it turns out, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2627354">a number of researchers</a> have fallen victim to similar fallacies in the past, including Amos Tversky himself in a <a href="https://psycnet.apa.org/record/1986-05021-001">1985 paper</a> about the hot-hand in basketball. Probability is hard!</p>
 
 
 </section>
