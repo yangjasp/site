@@ -1,8 +1,10 @@
 ---
-title: "About Me"
+title: ""
 image: Portrait.jpg
 about:
-  template: jolla
+  template: trestles
+  image-width: 15em
+  image-shape: round
   links:
     - icon: twitter
       text: Twitter
@@ -12,10 +14,9 @@ about:
       href: https://github.com/yangjasp
 ---
 
-I am a first-year PHD student in the Department of Biostatistics at the University of Washington. I completed my undergraduate studies at Grinnell College where I majored in biology and concentrated in statistics before obtaining an MSc in statistics from the University of Essex. I am currently researching study designs for measurement error correction with the [Shaw Lab](https://shawstat.org/) at Kaiser Permanente Washington Health Research Institute. My graduate studies are supported by the NSF Graduate Research Fellowship.
+## About Me 
+I am a first-year PHD student in the Department of Biostatistics at the University of Washington. I graduated from Grinnell College with a major in biology and concentration in statistics before earning an MSc in statistics from the University of Essex. I am currently researching study designs for measurement error correction with the [Shaw Lab](https://shawstat.org/) at Kaiser Permanente Washington Health Research Institute. My graduate studies are supported by the NSF Graduate Research Fellowship.
 
 My primary research interests are in measurement error, decision theory, Bayesian inference, causal inference. I am also interested in rationality and the philosophy of science. I am passionate about problems that seek to find optimal decisions given data and uncertainty, particularly those in biology and medicine.
-
-Recently, I have conducted research projects analyzing the determinants of COVID-19 hospital outcomes in the University of Pennsylvania Health System and developing software for efficient multi-wave sampling under two-phase designs. I have also been involved in the statistical analysis for multiple clinical trials. Outside of the classroom, I enjoy playing many sports including soccer and baseball, hiking, and and playing trivia. I am an avid Boston sports fan, and I credit much of my love for statistics to my passion for Major League Baseball statistics as a kid.
 
 You can reach me on twitter @jyang29 or via email at jbyang@uw.edu. Thanks for visiting!
