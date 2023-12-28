@@ -179,7 +179,7 @@
     "href": "posts/p_values_as_bets/index.html",
     "title": "Statistical Significance by Betting: Re-framing the p-value?",
     "section": "",
-    "text": "The p-value, originally developed over 100 years ago by Karl Pearson, has long been a staple of statistical hypothesis testing, but it has become an increasingly controversial topic in recent decades. In 2019, an article titled “Scientists rise up against statistical significance”, which was co-signed by over 800 statistical researchers, was published in Nature, bringing the topic to the forefront of conversations across the sciences.\nThis controversy has reasonably become a frequent topic of discussion in undergraduate statistics courses, and I have become intrigued by potential solutions. In this post I write about one of the most interesting ones that combines elements of economics and game theory: the proposition that we begin to think of p-values as bets."
+    "text": "The p-value has long been a staple of statistical hypothesis testing, but it has become an increasingly controversial topic in recent decades. In 2019, an article titled “Scientists rise up against statistical significance”, which was co-signed by over 800 statistical researchers, was published in Nature, bringing the topic to the forefront of conversations across the sciences.\nThis controversy has reasonably become a frequent topic of discussion in undergraduate statistics courses, and I have become intrigued by potential solutions. In this post I write about one of the most interesting ones that combines elements of economics and game theory: the proposition that we begin to think of p-values as bets."
   },
   {
     "objectID": "posts/p_values_as_bets/index.html#the-pros-and-cons-of-statistical-significance",
