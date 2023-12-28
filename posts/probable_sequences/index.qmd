@@ -54,7 +54,7 @@ Essentially, AAA is less likely because two of the chances to get AAA overlap. T
 A second approach to this problem is to consider a Markov chain with states corresponding to how far along the desired sequence you are:
 
 * State 0: Starting state. Still need the full sequence of three, so the minimum number of turns left is three.
-* State 1: The first card of the sequence has just been drawn. If the next two a drawn correctly, the game can end in two turns.
+* State 1: The first card of the sequence has just been drawn. If the next two are drawn correctly, the game can end in two turns.
 * State 2: The first two card of the sequence have just been drawn. If the next draw is what we are looking for, the game will end in one turn.
 * State 3: The absorbing final state. This is reached when the desired sequence has just been drawn.
 
