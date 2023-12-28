@@ -81,6 +81,8 @@ $$\small \begin{split} P(COVID^+|test^+)  & = \frac{P(COVID^+)*P(test^+|COVID^+)
 
 With this information, you determine that based on the evidence you have, there is only a 16.4% chance that you have COVID. 
 
+I made a simple app using RShiny that calculates these probabilities based on adjustable inputs. Check it out [here](https://yangjasp.shinyapps.io/shinycovid/).
+
 ## Another Interesting Bayesian Message
 
 In *scenario 2* above, you conclude that the test result is more likely a false positive than a true positive despite the 0.5% false positive rate. Applying this to a larger scale, let's suppose that a hospital implements a large-scale testing program where each of their 2,000 employees where each is tested weekly for COVID. They strike a deal with a PCR testing company that produces a test with a reported false-positive rate of 0.1% and a false-negative rate of 3% (note that we don't have great estimates for the true rates for these tests). The COVID case rate in the area is low, and the previous COVID-monitoring program suggested that very few workers had been infected so far over the course of the pandemic. In other words, their COVID-prevention protocols seem to be working.
