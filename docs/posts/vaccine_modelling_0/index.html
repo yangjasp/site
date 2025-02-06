@@ -9,7 +9,7 @@
 <meta name="author" content="Jasper Yang">
 <meta name="dcterms.date" content="2020-12-28">
 
-<title>Jasper Yang - Modeling COVID-19 Vaccine Rollout Strategies</title>
+<title>Jasper Yang - Modeling COVID-19 and Vaccine Rollout Strategies</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -61,7 +61,15 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="../../site_libs/viz-1.8.2/viz.js"></script>
+<link href="../../site_libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet">
+<script src="../../site_libs/grViz-binding-1.0.11/grViz.js"></script>
+<link href="../../site_libs/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="../../site_libs/tabwid-1.1.3/tabwid.js"></script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -117,14 +125,33 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-is-vaccine-efficacy" id="toc-what-is-vaccine-efficacy" class="nav-link active" data-scroll-target="#what-is-vaccine-efficacy">What is Vaccine Efficacy?</a></li>
+  <li><a href="#a-simple-model" id="toc-a-simple-model" class="nav-link" data-scroll-target="#a-simple-model">A Simple Model</a></li>
+  <li><a href="#adding-long-term-immunity-vaccines" id="toc-adding-long-term-immunity-vaccines" class="nav-link" data-scroll-target="#adding-long-term-immunity-vaccines">Adding Long-Term Immunity: Vaccines</a></li>
+  <li><a href="#adding-age-classes" id="toc-adding-age-classes" class="nav-link" data-scroll-target="#adding-age-classes">Adding Age Classes</a></li>
+  <li><a href="#completing-the-final-model" id="toc-completing-the-final-model" class="nav-link" data-scroll-target="#completing-the-final-model">Completing the Final Model</a></li>
+  <li><a href="#running-the-model" id="toc-running-the-model" class="nav-link" data-scroll-target="#running-the-model">Running the Model</a>
+  <ul class="collapse">
+  <li><a href="#scenario-1-only-one-vaccine-available" id="toc-scenario-1-only-one-vaccine-available" class="nav-link" data-scroll-target="#scenario-1-only-one-vaccine-available">Scenario 1: Only One Vaccine Available</a></li>
+  <li><a href="#scenario-2-vaccines-of-different-efficacies" id="toc-scenario-2-vaccines-of-different-efficacies" class="nav-link" data-scroll-target="#scenario-2-vaccines-of-different-efficacies">Scenario 2: Vaccines of Different Efficacies</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#model-extensions" id="toc-model-extensions" class="nav-link" data-scroll-target="#model-extensions">Model Extensions</a></li>
+  <li><a href="#appendix-notes-on-parameters-and-initial-conditions" id="toc-appendix-notes-on-parameters-and-initial-conditions" class="nav-link" data-scroll-target="#appendix-notes-on-parameters-and-initial-conditions">Appendix: Notes on Parameters and Initial Conditions</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Modeling COVID-19 Vaccine Rollout Strategies</h1>
+<h1 class="title">Modeling COVID-19 and Vaccine Rollout Strategies</h1>
 </div>
 
 
@@ -151,9 +178,261 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>This post isn’t playing nicely at the moment. An archived version is available <a href="myhtml/what-if-some-vaccines-are-more-effective-than-others.html">here</a>.</p>
+<p>Over the past three weeks, the United States government has approved two different COVID-19 vaccines for emergency use. These two vaccines, one developed by Pfizer and the other by Moderna, are actually quite similar in that they are both two-dose mRNA vaccines with mild side-effects, and they have almost identical efficacy rates (95% and 94.1% respectively according to the <a href="https://www.fda.gov/emergency-preparedness-and-response/coronavirus-disease-2019-covid-19/covid-19-vaccines">FDA</a>). The only notable <a href="https://abc7.com/moderna-and-pfizer-vaccine-whats-the-difference-between-side-effects-effectiveness/8815593/">difference</a> is that the Moderna vaccine can be stored in a standard freezer while the Pfizer vaccine must be stored at -70 degrees Celsius, making it slightly less accessible for small healthcare centers.</p>
+<p>Consequently, U.S. vaccine rollout plans have so far treated the two vaccines as essentially being the same, that is to say neither of the two vaccines is considered better than the other. This somewhat unexpected fact has simplified the already <a href="https://www.newsweek.com/nate-silver-criticism-covid-vaccine-report-interpretation-1556198">controversial</a> rollout, but the impending introductions of new vaccines from companies like Johnson &amp; Johnson and AstraZaneca threaten to introduce a new complexity. If a new vaccine with only 70% efficacy becomes available, how should it be incorporated into the rollout? Is it better to give at-risk patients a worse vaccine if it means they can get vaccinated a month earlier? Will people even want it?</p>
+<p>The answers to these questions are certainly complex, and they will likely draw from principles in biology, mathematics, statistics, and economics among other fields. I cannot pretend to be an expert here - I am hopeful that the true experts have been thinking deeply about this issue - but I think the problem is quite fascinating. This post contains my thoughts and some basic modeling!</p>
+<section id="what-is-vaccine-efficacy" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-vaccine-efficacy">What is Vaccine Efficacy?</h2>
+<p>Before moving any further, let’s make sure we understand what vaccine efficacy is. Essentially, it is a measure of how well a vaccine prevents cases of the disease in a group of vaccinated subjects compared to a control group of un-vaccinated (received placebo) subjects. An estimate of the efficacy is generated from clinical trial data, which every vaccine must collect and submit to the FDA for review before being made available to the public.</p>
+<p>The actual calculation of efficacy relies on a term called <em>risk</em>. In epidemiology, <em>risk</em> is the probability that an event (such as infection) will occur in a given time period, and it is measured in a clinical trial as the proportion of total subjects in a group who experienced the event in the time period that they were followed. For example, if 8 out of 1,000 patients who receive an actual vaccine in a clinical trial become infected with COVID-19, then the estimate of risk of infection in the vaccination group is simply 0.008, or 0.8%. The ratio of risk in the treatment (actual vaccine) group compared to the risk in the control (placebo) group is called the <em>risk ratio</em>. Risk ratios below 1 suggest that the treatment reduces the risk of disease compared to the control, and smaller ratios suggest a stronger reduction. Efficacy is calculated as 1 - Risk Ratio, so an efficacy closer to 1 (or 100%) means that the vaccine reduces the risk of infection by a greater proportion. You can read more about vaccine efficacy on the CDC website <a href="https://www.cdc.gov/csels/dsepd/ss1978/lesson3/section6.html">here</a>.</p>
+<p>Remember that ratios are multiplicative, not additive, so we can intepret 95% vaccine efficacy (the equivalent to 100%-95% = 5% risk ratio) as meaning that the risk for COVID in the vaccine group is 0.05 (5%) times the risk in the control group.</p>
+</section>
+<section id="a-simple-model" class="level2">
+<h2 class="anchored" data-anchor-id="a-simple-model">A Simple Model</h2>
+<p>To assess the potential effects of different vaccine rollouts, we will create a model of the COVID-19 pandemic in the United States. Our first step will be to develop a simple framework using principles from epidemiology before adding more complex features. For this simple model, we divide the population of the United States into four groups: susceptible (S), infected (I), recovered and immune (R), and deceased (D). At a specific point in time, every individual should fall into one and only one of these categories.</p>
+<p>With these categories established, our next job is to determine a way to describe the flow of individuals from group to group. See <strong>Diagram 1</strong> below:</p>
+<center>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="htmlwidget-9cb2954421abf5008084" style="width:100%;height:232px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-9cb2954421abf5008084">{"x":{"diagram":"digraph {\n  graph [layout = dot, rankdir = LR]\n  \n  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   \n  rec1 [label = <<b>Susceptible Individuals (S):<\/b>>]\n  rec2 [label = <<b>Infected Individuals (I):<\/b>>]\n  rec3 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/><\/b>>]\n  rec4 [label = <<b>Deceased Individuals (D):<\/b>>]\n  \n  # edge definitions with the node IDs\n  rec1 -> rec2 rec2 -> rec3 rec2 -> rec4 rec3 -> rec1 \n\n  }","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</center>
+<p>We are interested in how the flow of individuals occurs over time, so we will measure it as the rate at which people exit/enter a group per day. Below we explore each arrow on the diagram above:</p>
+<ul>
+<li><strong>S → I:</strong> The rate at which susceptible individuals become infected. This value intuitively depends on the rate of contact between susceptible and infected individuals as well as the probability that the disease would be transmitted given a contact occurs. Here we introduce our first parameter, <span class="math inline">\(\beta\)</span>, which captures the <em>rate of transmission</em>. We can calculate <span class="math inline">\(\beta\)</span> using <span class="math inline">\(R_0\)</span>, the more intuitive “basic reproductive rate” of a disease, <span class="math inline">\(\gamma\)</span>, the recovery rate (which is calculated as as 1/length of infectious period), and <span class="math inline">\(N\)</span>, the population size, because:</li>
+</ul>
+<p><span class="math display">\[\begin{align*}
+\beta = \frac{R_0 \gamma}{N}
+\end{align*}\]</span></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thus, S → I is described by <span class="math inline">\(\beta S I\)</span> where <span class="math inline">\(S\)</span> and <span class="math inline">\(I\)</span> are the number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;of individuals in groups S and I.</p>
+<ul>
+<li><p><strong>I → D:</strong> The rate at which infected individuals die. This depends on our second parameter, <span class="math inline">\(\gamma\)</span>, and a third parameter, <span class="math inline">\(\mu\)</span>, the death rate. As the inverse of the infectious period, <span class="math inline">\(\gamma\)</span> captures the average number of infected individuals that stop being infectious each day (i.e.&nbsp;if the infectious period is 5 days, then 1/5 of infectious individuals stop being infectious each day). As the death rate, <span class="math inline">\(\mu\)</span> tells us what fraction of individuals leaving <span class="math inline">\(I\)</span> are headed to <span class="math inline">\(D\)</span> (what percent die), while the rest, or 1-<span class="math inline">\(\mu\)</span>, recover and head to <span class="math inline">\(R\)</span>. Thus, I → D is described by <span class="math inline">\(\gamma I\mu\)</span>.</p></li>
+<li><p><strong>I → R:</strong> The rate at which infected individuals recover. Using logic from I → D, above we have I → D is described by <span class="math inline">\(\gamma I(1-\mu)\)</span>. Note that the total rate at which individuals exit <span class="math inline">\(I\)</span> is simply <span class="math inline">\(\gamma I\)</span> because every infected individual either dies or recovers.</p></li>
+<li><p><strong>R → S:</strong> The rate at which recovered individuals lose immunity and become susceptible again. This value depends on a fourth paramter, <span class="math inline">\(\omega\)</span>, the inverse of the period of immunity. It is the same idea as <span class="math inline">\(\gamma\)</span>.</p></li>
+</ul>
+<p>With these rates determined, we can now create a system of ordinary differential equations to describe the flow of people between groups. For each group, the change in size with respect to time (the derivative) is simply the sum of the rates with which people enter it (arrows entering the box) minus the rates with which people leave (arrows leaving the box). Thus, we have:</p>
+<p><span class="math display">\[\begin{align*}
+\frac{dS}{dt} &amp;= -\beta S I + \omega R \\
+\frac{dI}{dt} &amp;= \beta S I - \gamma I\\
+\frac{dR}{dt} &amp;= \gamma I(1-\mu) - \omega R\\
+\frac{dD}{dt} &amp;= \gamma I(\mu)
+\end{align*}\]</span></p>
+<p>where the parameters <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\gamma\)</span>, <span class="math inline">\(\omega\)</span>, and <span class="math inline">\(\mu\)</span> are the transmission rate, recovery rate, loss of immunity rate, and death rate, respectively. If we set values for each of these parameters based on our knowledge of the COVID-19 pandemic and set initial sizes for each group, we can track the course of the disease by solving this system of ordinary differential equations for each day to model how the disease might progress.</p>
+</section>
+<section id="adding-long-term-immunity-vaccines" class="level2">
+<h2 class="anchored" data-anchor-id="adding-long-term-immunity-vaccines">Adding Long-Term Immunity: Vaccines</h2>
+<p>Now that we have established the basic theoretical framework of the model, we can start to add complexities such as vaccines. Vaccinated individuals will come out of the susceptible group and enter a new group with different properties from the four we established before. See <strong>Diagram 2</strong> below:</p>
+<center>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="htmlwidget-df79e63885f2d476f947" style="width:100%;height:232px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-df79e63885f2d476f947">{"x":{"diagram":"digraph {\n  graph [layout = dot, rankdir = LR]\n  \n  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   \n  rec1 [label = <<b>Susceptible Individuals (S):<\/b>>]\n  rec2 [label = <<b>Vaccinated Individuals (V):<\/b>>]\n  rec3 [label = <<b>Infected Individuals (I):<\/b>>]\n  rec4 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/><\/b>>]\n  rec5 [label = <<b>Deceased Individuals (D):<\/b>>]\n  \n  # edge definitions with the node IDs\n  rec1 -> rec2 rec1 -> rec3 rec3 -> rec4 rec3 -> rec5 rec4 -> rec1 \n\n  }","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</center>
+<p>This model assumes that every vaccinated individual is protected completely from infection, but we know that this is not the case for COVID-19 vaccines in the real world. Accounting for this fact and supposing that individuals can receive one of two different vaccines, we have a new model detailed in <strong>Diagram 3</strong>.</p>
+<center>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="htmlwidget-294b38817015632d1207" style="width:100%;height:232px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-294b38817015632d1207">{"x":{"diagram":"digraph {\n  graph [layout = dot, rankdir = LR]\n  \n  node [shape = rectangle, fixedsize = true, width = 4.0, height = 2.0, fontname = Helvetica, fontsize  = 20]   \n  rec1 [label = <<b>Susceptible Individuals (S):<\/b>>]\n  rec2 [label = <<b>Vaccine 1 (V1):<\/b>>]\n  rec3 [label = <<b>Vaccine 2 (V2):<\/b>>]\n  rec4 [label = <<b>Infected Individuals (I):<\/b>>]\n  rec5 [label = <<b>Recovered and Immune <br/> Individuals (R): <br/><\/b>>]\n  rec6 [label = <<b>Deceased Individuals (D):<\/b>>]\n  \n  # edge definitions with the node IDs\n rec1 -> rec2 rec1 -> rec3 rec2 -> rec4 rec3 -> rec4 rec1 -> rec4  rec4 -> rec5 rec4 -> rec6 rec5 -> rec1\n\n  }","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</center>
+<p>Assuming that the number of vaccines given per day, <span class="math inline">\(\nu_1\)</span> and <span class="math inline">\(\nu_2\)</span>, and the rates of success, <span class="math inline">\(\varphi_1\)</span> and <span class="math inline">\(\varphi_2\)</span>, for each vaccine are known, we now have the following system of ordinary differential equations:</p>
+<p><span class="math display">\[\begin{align*}
+\frac{dS}{dt} &amp;= -\beta S I + \omega R -  \nu_1  -  \nu_2 \\
+\frac{dV_{1}}{dt} &amp;= \nu_1 - (1-\varphi_1) \beta V_1 I\\
+\frac{dV_{2}}{dt} &amp;= \nu_2 - (1-\varphi_2) \beta V_2 I \\
+\frac{dI}{dt} &amp;= \beta S I - \gamma I + (1-\varphi_1)\beta V_{1} I + (1-\varphi_2)\beta V_{2} I \\ &amp;= \beta I[S + (1-\varphi_1)V_{1} + (1-\varphi_2)V_{2}] - \gamma I\\
+\frac{dR}{dt} &amp;= \gamma I(1-\mu) - \omega R\\
+\frac{dD}{dt} &amp;= \gamma I(\mu)
+\end{align*}\]</span></p>
+<p>There are obviously a number of assumptions that this model is making for the sake of simplicity. The big ones are:</p>
+<ul>
+<li>Every individual has the same <span class="math inline">\(\beta\)</span>, that is the same probability of coming into contact with an infected individual and then contracting it.</li>
+<li>Actually, all the parameters <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\gamma\)</span>, <span class="math inline">\(\omega\)</span>, <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\nu_1\)</span>, <span class="math inline">\(\nu_2\)</span>, <span class="math inline">\(\varphi_1\)</span>, and <span class="math inline">\(\varphi_2\)</span> are constant throughout the population and over time.</li>
+<li>The population is closed other than COVID deaths. No births or deaths from other causes are accounted for.</li>
+</ul>
+<p>We should be okay with most of these assumptions for the sake of our simple model. Accounting for the ways in which behavioral changes, weather patterns, and government policies change the parameters would help the model better reflect the real life course of the virus, but we will leave that to the <a href="https://research.columbia.edu/covid/mapping/survival-convolution">experts</a>. With that said, there is one key factor that is currently being ignored - age.</p>
+<p>It is well known that virus impacts different age groups in very different ways. In terms of our parameters, the death rate, <span class="math inline">\(\mu\)</span>, varies greatly across age groups. On top of that, the vaccine rollout plans (impacting <span class="math inline">\(\nu_1\)</span> and <span class="math inline">\(\nu_2\)</span>) will also certainly account for differences in age. In the following section, I discuss how we can incorporate age classes into our model.</p>
+</section>
+<section id="adding-age-classes" class="level2">
+<h2 class="anchored" data-anchor-id="adding-age-classes">Adding Age Classes</h2>
+<p>Let’s now suppose that our population is made up of distinct age classes where <span class="math inline">\(N_i\)</span> is the number of individuals in age group <span class="math inline">\(i\)</span>. For our purposes, we will use the age classes (with their corresponding N and death rates) detailed below:</p>
+<div class="cell">
+<div class="cell-output-display">
+
+<div class="tabwid"><style>.cl-bf966c32{}.cl-bf9288b0{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-bf9288ba{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-bf944916{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-bf944920{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-bf945686{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf945690{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf945691{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf94569a{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf94569b{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf94569c{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf94569d{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf94569e{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456a4{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456a5{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456a6{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456a7{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456a8{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456ae{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456af{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456b0{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456b8{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456b9{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456ba{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456bb{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456bc{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456c2{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456c3{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456c4{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456c5{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456cc{width:1.822in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bf9456cd{width:1.117in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-bf966c32"><thead><tr style="overflow-wrap:break-word;"><th class="cl-bf945686"><p class="cl-bf944916"><span class="cl-bf9288b0">i</span></p></th><th class="cl-bf945690"><p class="cl-bf944920"><span class="cl-bf9288ba">Age</span></p></th><th class="cl-bf945691"><p class="cl-bf944916"><span class="cl-bf9288ba">Population (in Millions)</span></p></th><th class="cl-bf94569a"><p class="cl-bf944920"><span class="cl-bf9288ba">Death Rate*</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">1</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">0-4</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">19.58</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00026</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">2</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">5-9</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">20.19</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00010</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a4"><p class="cl-bf944916"><span class="cl-bf9288ba">3</span></p></td><td class="cl-bf9456a5"><p class="cl-bf944920"><span class="cl-bf9288ba">10-14</span></p></td><td class="cl-bf9456a6"><p class="cl-bf944916"><span class="cl-bf9288ba">20.80</span></p></td><td class="cl-bf9456a7"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00010</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">4</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">15-19</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">21.06</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00022</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">5</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">20-25</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">21.63</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00040</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">6</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">26-30</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">23.50</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00040</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a8"><p class="cl-bf944916"><span class="cl-bf9288ba">7</span></p></td><td class="cl-bf9456ae"><p class="cl-bf944920"><span class="cl-bf9288ba">31-35</span></p></td><td class="cl-bf9456af"><p class="cl-bf944916"><span class="cl-bf9288ba">22.43</span></p></td><td class="cl-bf9456b0"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00135</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">8</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">36-40</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">21.73</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00135</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">9</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">41-45</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">19.92</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00346</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">10</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">46-50</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">20.40</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.00346</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a4"><p class="cl-bf944916"><span class="cl-bf9288ba">11</span></p></td><td class="cl-bf9456a5"><p class="cl-bf944920"><span class="cl-bf9288ba">51-55</span></p></td><td class="cl-bf9456a6"><p class="cl-bf944916"><span class="cl-bf9288ba">20.48</span></p></td><td class="cl-bf9456a7"><p class="cl-bf944920"><span class="cl-bf9288ba">0.01267</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a4"><p class="cl-bf944916"><span class="cl-bf9288ba">12</span></p></td><td class="cl-bf9456a5"><p class="cl-bf944920"><span class="cl-bf9288ba">56-60</span></p></td><td class="cl-bf9456a6"><p class="cl-bf944916"><span class="cl-bf9288ba">21.87</span></p></td><td class="cl-bf9456a7"><p class="cl-bf944920"><span class="cl-bf9288ba">0.01267</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">13</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">61-65</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">20.57</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.01267</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a4"><p class="cl-bf944916"><span class="cl-bf9288ba">14</span></p></td><td class="cl-bf9456a5"><p class="cl-bf944920"><span class="cl-bf9288ba">66-70</span></p></td><td class="cl-bf9456a6"><p class="cl-bf944916"><span class="cl-bf9288ba">17.46</span></p></td><td class="cl-bf9456a7"><p class="cl-bf944920"><span class="cl-bf9288ba">0.04820</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456a4"><p class="cl-bf944916"><span class="cl-bf9288ba">15</span></p></td><td class="cl-bf9456a5"><p class="cl-bf944920"><span class="cl-bf9288ba">71-75</span></p></td><td class="cl-bf9456a6"><p class="cl-bf944916"><span class="cl-bf9288ba">14.03</span></p></td><td class="cl-bf9456a7"><p class="cl-bf944920"><span class="cl-bf9288ba">0.04820</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456b8"><p class="cl-bf944916"><span class="cl-bf9288ba">16</span></p></td><td class="cl-bf9456b9"><p class="cl-bf944920"><span class="cl-bf9288ba">76-80</span></p></td><td class="cl-bf9456ba"><p class="cl-bf944916"><span class="cl-bf9288ba">9.65</span></p></td><td class="cl-bf9456bb"><p class="cl-bf944920"><span class="cl-bf9288ba">0.11636</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf94569b"><p class="cl-bf944916"><span class="cl-bf9288ba">17</span></p></td><td class="cl-bf94569c"><p class="cl-bf944920"><span class="cl-bf9288ba">81-85</span></p></td><td class="cl-bf94569d"><p class="cl-bf944916"><span class="cl-bf9288ba">6.32</span></p></td><td class="cl-bf94569e"><p class="cl-bf944920"><span class="cl-bf9288ba">0.11636</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bf9456bc"><p class="cl-bf944916"><span class="cl-bf9288ba">18</span></p></td><td class="cl-bf9456c2"><p class="cl-bf944920"><span class="cl-bf9288ba">85+</span></p></td><td class="cl-bf9456c3"><p class="cl-bf944916"><span class="cl-bf9288ba">6.61</span></p></td><td class="cl-bf9456c4"><p class="cl-bf944920"><span class="cl-bf9288ba">0.22083</span></p></td></tr></tbody><tfoot><tr style="overflow-wrap:break-word;"><td colspan="4" class="cl-bf9456c5"><p class="cl-bf944920"><span class="cl-bf9288ba">*Death Rate is calculated as overall deaths rate of population divided by overall incidence rate in population according to the CDC's ACIP report on 12/20/20. Population totals are for 2019 from Statistica.com.</span></p></td></tr></tfoot></table></div>
+</div>
+</div>
+<p>The seemingly simple, however incorrect, approach would be to run our previously specified vaccine model on each age group individually and calculate the overall size of each group as the sum of its size in each age group. For example, <span class="math inline">\(S = \sum_{i=1}^{18} S_i\)</span>. The problem with this approach is that it assumes that individuals only interact with, and therefore can only be infected by, people in the same age class. This is clearly not reflective of the real world.</p>
+<p>To solve this issue, we need a <strong>contact matrix</strong>. A contact matrix describes the contacts between age group <span class="math inline">\(i\)</span> and age group <span class="math inline">\(j\)</span>. As an example, let’s suppose that there are 900 students and 100 teachers in a school. Students make on average 40 contacts with other students and 10 contacts with teachers per day. Since the ratio of students to teachers is 9:1, students making 10 contacts with teachers on average means that teachers make on 10*9 = 90 contacts with students per day an average. Now also assume that the teachers only make contact with 5 other teachers per day on average. The contact matrix would be:</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+40 &amp; 10 \\
+90 &amp; 5 \\
+\end{bmatrix}
+\]</span></p>
+<p>These contact matrices have a few cool properties. You can read more about them <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4002176/">here</a>.</p>
+<p>Because of the importance of the student-to-teacher ratio in the example above, contact matrices based on one demographic or social structure are are not generally compatible with other structures. Conveniently, a 2017 <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005697#sec014">study</a> by Kiesha Prem, Alex Cook, and Mark Jit estimated contact matrices for 152 countries, including the United States, using contact surveys and demographic data. We can download their contact matrix for the United States, multiply it by 0.2 to account for the reduced social mixing due to social distancing, and include it as a new parameter, C, in our model. You can view the code for the creation of C and the rest of this analysis at <a href="https://github.com/yangjasp/distill_site" class="uri">https://github.com/yangjasp/distill_site</a>.</p>
+<p>For our system of ordinary differential equations we now have:</p>
+<p><span class="math display">\[\begin{align*}
+\frac{dS_i}{dt} &amp;= -\beta S_i C (I_i/N) + \omega R_i - \nu_{1i}  -  \nu_{2i} \\
+\frac{dV_{1i}}{dt} &amp;=  \nu_{1i} - (1-\varphi_1) \beta V_{1i} C (I_i/N)\\
+\frac{dV_{2i}}{dt} &amp;=  \nu_{2i} - (1-\varphi_2) \beta V_{2i} C (I_i/N)\\
+\frac{dI_i}{dt} &amp;= \beta S_i I_i - \gamma I_i + (1-\varphi_1)\beta V_{1i} C (I_i/N) + (1-\varphi_2)\beta V_{2i} C (I_i/N) \\
+\frac{dR_i}{dt} &amp;= \gamma I_i(1-\mu_i) - \omega R_i\\
+\frac{dD_i}{dt} &amp;= \gamma I_i(\mu_i)
+\end{align*}\]</span></p>
+<p>Note that this model assumes that the parameters <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\gamma\)</span>, <span class="math inline">\(\omega\)</span>, <span class="math inline">\(\varphi_1\)</span>, and <span class="math inline">\(\varphi_2\)</span> are constant across all age classes, while the death rate, <span class="math inline">\(\mu_i\)</span>, and the vaccination rates, <span class="math inline">\(\nu_{1i}\)</span> and <span class="math inline">\(\nu_{2i}\)</span>, vary across classes.</p>
+</section>
+<section id="completing-the-final-model" class="level2">
+<h2 class="anchored" data-anchor-id="completing-the-final-model">Completing the Final Model</h2>
+<p>Introducing a contact matrix allows our model to more accurately capture the rate of transmission across age classes, but it does not account for the fact that asymptomatic carriers are much more likely to come into contact with susceptible individuals than symptomatic ones. With this fact in mind, we introduce one more parameter, <span class="math inline">\(\alpha_i\)</span>, to represent the fraction of asymptomatic infections per age class. This addition should be an important one, as it will help our model better capture the <a href="https://jamanetwork.com/journals/jama/fullarticle/2773055">reported</a> role of young adults as viral spreaders. Similarly to the approach described in a 2012 <a href="http://www.sherrytowers.com/towers_feng_2012.pdf">paper</a> by Tower and Feng, we can now split our infected (I<sub>s</sub>) classes into symptomatic (I<sup>s</sup>) and asymptomatic (I<sup>a</sup>) class. We will also create a new contact matrix, C<sup>s</sup>, which for our purposes will be a our old contact matrix, now called C<sup>a</sup>, multiplied by some constant <span class="math inline">\(k\)</span> &lt; 1 which represents the fraction of contacts that a symptomatic individual makes compared to an asymptomatic individual on average. This gives us a revised final system of ordinary differential equations:</p>
+<p><span class="math display">\[\begin{align*}
+\frac{dS_i}{dt} &amp;= -\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \omega R_i - \nu_{1i}  -  \nu_{2i} \\
+\frac{dV_{1i}}{dt} &amp;=  \nu_{1i}  - \beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] \\
+\frac{dV_{2i}}{dt} &amp;=  \nu_{2i}  - \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\\
+\frac{dI^{a}_i}{dt} &amp;=
+\alpha_i\Big[\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \\ &amp;\phantom{=}
+\beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] +  \\ &amp;\phantom{=}  \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\Big] -
+\gamma I^{a}_i \\
+\frac{dI^{s}_i}{dt} &amp;= (1-\alpha_i)\Big[\beta S_i [C^{a} (I^{a}_i/N_i) + C^{s} (I^{s}_i/N_i)] + \\ &amp;\phantom{=}
+\beta (1-\varphi_{1}) V_{1i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)] +  \\ &amp;\phantom{=}  \beta (1-\varphi_{2}) V_{2i} [C^{a} (I_i/N_i) + C^{s}(I^{s}_i/N_i)]\Big] -
+\gamma I^{s}_i \\
+\frac{dR_i}{dt} &amp;= (1-\mu_i)(\gamma I^{a}_i + \gamma I^{s}_i) - \omega R_i\\
+\frac{dD_i}{dt} &amp;= \mu_i(\gamma I^{a}_i + \gamma I^{s}_i)
+\end{align*}\]</span></p>
+<p>Where <span class="math inline">\(C^{s} = k C^{a}\)</span> in our case (it doesn’t have to in all cases, clearly, but we will use this for simplicity). This is our final model.</p>
+</section>
+<section id="running-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-model">Running the Model</h2>
+<p>We can now use this model to answer our original question about the rollout of vaccines with different efficacies by adjusting the rates at which they are given in each age class, <span class="math inline">\(\nu_{1i}\)</span> and <span class="math inline">\(\nu_{2i}\)</span>.</p>
+<p>So how do we set <span class="math inline">\(\nu_{1i}\)</span> and <span class="math inline">\(\nu_{2i}\)</span>? According to a recent Bloomberg <a href="https://www.bloomberg.com/news/articles/2020-12-29/u-s-vaccinations-at-200-000-a-day-run-far-short-of-warp-speed">article</a>, approximately 200,000 people per day are being vaccinated against COVID-19 on average. This number is pretty low, and some experts have <a href="https://www.cnbc.com/2020/12/30/covid-us-needs-to-vaccinate-3-million-people-per-day-to-hit-goal.html">said</a> that this number needs to be much larger if the U.S. wants to reach its goals in 2021. Let’s say that the average number of vaccinations per day increases to 1 million in the new year. Since we defined <span class="math inline">\(\nu_{1i}\)</span> and <span class="math inline">\(\nu_{2i}\)</span> as the number of susceptible patients vaccinated per day, we can set a limit on the total vaccinations per day, <span class="math inline">\(1,000,000 = \sum_{i=1}^{18} \nu_{1i}+\nu_{2i}\)</span>. Here, we assume that the limiting factor in doses per day is the administration of them, not the availability of the vaccines themselves. Right now, this appears to be a <a href="https://www.nytimes.com/interactive/2020/us/covid-19-vaccine-doses.html">more than reasonable</a> assumption.</p>
+<p>Note: for the models that follow, I will be using the following parameters:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\beta\)</span></td>
+<td>0.05</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\gamma\)</span></td>
+<td>1/7</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\omega\)</span></td>
+<td>1/91</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\varphi_1\)</span></td>
+<td>0.95</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\varphi_2\)</span></td>
+<td>0.70</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(k\)</span></td>
+<td>0.20</td>
+</tr>
+</tbody>
+</table>
+<section id="scenario-1-only-one-vaccine-available" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-1-only-one-vaccine-available">Scenario 1: Only One Vaccine Available</h3>
+<p>Let’s start by supposing that only one vaccine efficacy, 95%, is available. Remembering our discussion about vaccine efficacy, this means that compared to people who are not vaccinated, those who have been vaccinated have 0.05 times the risk of getting COVID. Assuming vaccinated individuals are making the same social contacts as they would if they were not vaccinated, this means that we have <span class="math inline">\(\sum_{i=1}^{18} \nu_{1i} = 1,000,000\)</span> (<span class="math inline">\(\nu_{2i} = 0\)</span> for all <span class="math inline">\(i\)</span>), and <span class="math inline">\(\varphi_{1i} = 0.95\)</span>. That is, people who receive a vaccine receive vaccine 1 and are <span class="math inline">\(1-\varphi_{1i}=0.05\)</span> times as likely to get COVID as those in the S group.</p>
+<p>Below is a series of graphs comparing the the overall trajectory of deaths due to COVID-19 in the U.S. with no vaccine, Vaccine 2 (70% Efficacy) alone, and Vaccine 1 (95% Efficacy) alone. In these scenarios, both vaccines are administered starting with the oldest individuals and gradually moving down age classes.</p>
+<div class="quarto-figure quarto-figure-center" style="margin-bottom: -14px;">
+<figure class="figure">
+<p><img src="figs/Fig1A.png" class="img-fluid figure-img" style="width:79.0%"></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center" style="margin-bottom: -14px;">
+<figure class="figure">
+<p><img src="figs/Fig1B.png" class="img-fluid figure-img" style="width:79.0%"></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="figs/Fig1C.png" class="img-fluid figure-img" style="width:79.0%"></p>
+</figure>
+</div>
+<p>The sizeable difference between the three cases is clear and demonstrates the impact that vaccines can have on the COVID-19 pandemic. Both vaccines cut the cumulative death total for 2021 in half and decreased the rate of deaths significantly. If we have an effective vaccine, the rate of COVID deaths starts to slow in late spring, even without a change in our distancing behavior.</p>
+<p>Okay, the results of this scenario were probably pretty obvious. Now for the fun in scenario 2!</p>
+</section>
+<section id="scenario-2-vaccines-of-different-efficacies" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-2-vaccines-of-different-efficacies">Scenario 2: Vaccines of Different Efficacies</h3>
+<p>Now let’s suppose that there are two vaccines of different efficacies available. For the approximately 320 million people in the US, we have 150 doses ordered each for Vaccine 1 (95% efficacy) and Vaccine 2 (70% efficacy). In this scenario, we are still limited to 1 million doses per day, but the vaccines can each only be produced at a rate of 500,000 per day (note that if 1 million per day of the 95% could be produced, we would clearly use that on the most vulnerable individuals until we ran out before starting to produce the 70% and using that on whomever remained). We now have the dilemna that inspired this post!</p>
+<p>Clearly we want to vaccinate the oldest and most vulnerable individuals first, but is it better to give them the Vaccine 2 if it means they get vaccinated faster? Let’s consider a couple of approaches:</p>
+<ul>
+<li><p><em>Approach A :</em> Every individual 65 or older will receive Vaccine 1. Vaccine 2 will only be given to people below 65, starting with the oldest (most vulnerable) and moving down age groups. Once the amount of susceptible individuals that are 65 or older drops below 500,000, the rest of the vaccine 1 doses can be allocated to whoever the oldest individuals left are.</p></li>
+<li><p><em>Approach B:</em> The oldest individuals will be vaccinated as soon as possible with either vaccine. Every day, the oldest 500,000 people will receive Vaccine 1 and the next oldest 500,000 will receive Vaccine 2.</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="figs/Fig2.png" class="img-fluid figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+<p>Based on our model, approach A will save approximately 200,000 more lives overall than approach B. Almost 300,000 lives are predicted to be saved in the age 65+ category, although approach 1 results in more young deaths. This finding suggests that if our goal is to save the most lives, vulnerable individuals need to be vaccinated with an effective vaccine, even if that means it is done at a slower rate.</p>
+<p>But is it really this simple? Remember that the figure above is based on a Vaccine 1 with 95% efficacy and a Vaccine 2 with 70% efficacy. But what if the difference in efficacies is smaller? The figure below compares the two approaches when Vaccine 2 has an 90% efficacy.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="figs/Fig3.png" class="img-fluid figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+<p>Under these conditions, approach B saves more lives overall. This finding is logical when we consider that approach B would clearly be optimal if both Vaccine 1 and Vaccine 2 had the same efficacy. Putting of vaccinations of vulnerable individuals is not worth it if the two vaccines have similar efficacies.</p>
+<p>So at what Vaccine 2 efficacy does approach B overcome approach A as optimal? At this point of interest, the impact of a less effective vaccine is approximately equal to the impact of a slower rate of administration. According to our model, the two approaches result in an approximately equal number of deaths when Vaccine 2 has an 85% efficacy. Below 85%, more lives are saved with approach A, but approach B leads to more lives saved when Vaccine 2 has an efficacy above 85%.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>While the specific numbers predicted by our model will almost certainly vary from the real-life course of COVID-19 in the U.S. in 2021, the most important takeaway from this post is the vital role that vaccine efficacy and rollout strategies will play in determining the pandemic’s course. If and when multiple vaccines become available, policy makers must keep the importance of vaccine efficacy differences in mind as they seek to develop vaccine allocation approaches that maximize lives saved. If a new vaccine has a significantly lower efficacy (&lt; 85% according to our model) compared to the 95% efficacy of Pfizer and Moderna’s, it will be optimal to start administering it to low-risk individuals right away. If the efficacy is similar to 95% (&gt; 85% according to our model), the best strategy is to use it to ensure that the oldest individuals get vaccinated as soon as possible.</p>
+</section>
+<section id="model-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="model-extensions">Model Extensions</h2>
+<p>The model framework set up in this post has the potential to become even more reflective of the real-life pandemic with some extra considerations. The true contact matrix and related transmission rate <span class="math inline">\(\beta\)</span> are changing constantly as a result of developing societal perceptions of the virus, individual behaviors, and government policies. A time-dependent contact matrix and <span class="math inline">\(\beta_t\)</span> would allow the model to reflect some of these dymanics. Another possible extension of the model could include more demographic classes that take into account other factors besides age such as job or location.</p>
+<p>As a final point, this model is deterministic in that its projections are based on exact parameters without accounting for randomness. Despite this limitation, deterministic models are still used <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6001967/">widely</a> throughout epidemiology and have had some important applications. I am hoping to play around with a stochastic model that incorporates some of these other ideas in the future!</p>
+<p>Also, let me know if there are any other scenarios I should explore. I am hoping to make a Shiny app that makes any scenario possible!</p>
+</section>
+<section id="appendix-notes-on-parameters-and-initial-conditions" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-notes-on-parameters-and-initial-conditions">Appendix: Notes on Parameters and Initial Conditions</h2>
+<ul>
+<li>The rate of death once infected with COVID in each of the following age groups is (taken as (deaths per 100,000)/(incidence per 100,000) from <a href="https://www.cdc.gov/vaccines/acip/meetings/downloads/slides-2020-12/slides-12-20/02-COVID-Dooling.pdf">CDC</a> estimates. Assumes number of patients re-infected is minimal.):</li>
+<li>The initial conditions for the model were estimated from <a href="https://www.statista.com/statistics/241488/population-of-the-us-by-sex-and-age/">Statistica</a> population data and <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">New York Times COVID-19 data</a> as of January 3, 2021. They were:</li>
+</ul>
+<ul>
+<li>The models also assumes that:
+<ul>
+<li>The death and infection rates published in the CDC <a href="https://www.cdc.gov/vaccines/acip/meetings/downloads/slides-2020-12/slides-12-20/02-COVID-Dooling.pdf">ACIP Report</a> on 12/20/20 are accurate and uniform within their defined age groups.</li>
+<li>The vaccine is effective at preventing illness and transmission.</li>
+<li>The contacts made by individuals are reduced by a constant multiplier as a result of social distancing guidelines. The nature and proportional allocation among age classes does not change. This is probably not true, but I am not aware of studies that have quantified the adjusted contact rates.</li>
+<li>None of the parameters change over time. This is not true, as I assume/hope more extreme measures would be taken to slow the growth if it exploded.</li>
+<li>Stochastic effects do not affect the course of the pandemic.</li>
+</ul></li>
+</ul>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Morris SE (2020). shinySIR: Interactive Plotting for Mathematical Models of Infectious Disease Spread. R package version 0.1.2, https://github.com/SineadMorris/shinySIR.</li>
+<li>Prem K, Cook AR, Jit M (2017) Projecting social contact matrices in 152 countries using contact surveys and demographic data.</li>
+<li>Towers, S. (2012, December 11). SIR Model with Age Classes. Retrieved January 02, 2021, from http://sherrytowers.com/2012/12/11/sir-model-with-age-classes/</li>
+<li>Towers, S., &amp; Feng, Z. (2012). Social contact patterns and control strategies for influenza in the elderly. Mathematical biosciences, 240(2), 241-249.</li>
+<li><em>Computing Note:</em> All analysis was performed in R statistical software. The package deSolve was used to solve each system of differential equations. Plots were created with ggplot2. All code used in this analysis is available <a href="https://github.com/yangjasp/distill_site/tree/main/_posts/2020-12-28-what-if-some-vaccines-are-more-effective-than-others">here</a>.</li>
+</ul>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -27,5 +27,4 @@ editor: visual
 exclude:
   - posts/vaccine_modelling/VaccineModelling.qmd
   - posts/vaccine_modelling/VaccineModelling.rmarkdown
-  - posts/vaccine_modelling/VaccineModelling.rmd
 

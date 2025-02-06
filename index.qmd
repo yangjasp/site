@@ -15,7 +15,7 @@ about:
 ---
 
 ## About Me 
-I am a first-year PHD student in the Department of Biostatistics at the University of Washington. I graduated from Grinnell College with a major in biology and concentration in statistics before earning an MSc in statistics from the University of Essex. I am currently researching study designs for measurement error correction with the [Shaw Lab](https://shawstat.org/) at Kaiser Permanente Washington Health Research Institute. My graduate studies are supported by the NSF Graduate Research Fellowship.
+I am a second-year PHD student in the Department of Biostatistics at the University of Washington. I graduated from Grinnell College with a major in biology and concentration in statistics before earning an MSc in statistics from the University of Essex. I am currently researching study designs for measurement error correction with the [Shaw Lab](https://shawstat.org/) at Kaiser Permanente Washington Health Research Institute. My graduate studies are supported by the NSF Graduate Research Fellowship.
 
 My primary research interests are in measurement error, decision theory, Bayesian inference, and causal inference. I am also interested in rationality and the philosophy of science. I am passionate about problems that seek to find optimal decisions given data and uncertainty, particularly those in biology and medicine.
 
