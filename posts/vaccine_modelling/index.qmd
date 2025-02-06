@@ -3,7 +3,8 @@ title: "Modeling COVID-19 and Vaccine Rollout Strategies"
 preview: NULL
 author: "Jasper Yang"
 date: 12-28-2020
-hidden: true
+categories: 
+image: "fig/Fig2.png"
 execute:
   eval: false
 ---
@@ -579,11 +580,11 @@ figure1 <- cowplot::plot_grid(plot3,plot2,plot1,ncol = 1, align = "h", labels = 
 figure1
 ```
 
-![](figs/Fig1A.png){fig-align="center" width=79% style="margin-bottom: -14px;"}
+![](figs/Fig1A.png){fig-align="center" width="79%" style="margin-bottom: -14px;"}
 
-![](figs/Fig1B.png){fig-align="center" width=79% style="margin-bottom: -14px;"}
+![](figs/Fig1B.png){fig-align="center" width="79%" style="margin-bottom: -14px;"}
 
-![](figs/Fig1C.png){fig-align="center" width=79%}
+![](figs/Fig1C.png){fig-align="center" width="79%"}
 
 The sizeable difference between the three cases is clear and demonstrates the impact that vaccines can have on the COVID-19 pandemic. Both vaccines cut the cumulative death total for 2021 in half and decreased the rate of deaths significantly. If we have an effective vaccine, the rate of COVID deaths starts to slow in late spring, even without a change in our distancing behavior.
 
@@ -1000,7 +1001,7 @@ figure2
 
 ```
 
-![](figs/Fig2.png){fig-align="center" width=80% }
+![](figs/Fig2.png){fig-align="center" width="80%"}
 
 Based on our model, approach A will save approximately 200,000 more lives overall than approach B. Almost 300,000 lives are predicted to be saved in the age 65+ category, although approach 1 results in more young deaths. This finding suggests that if our goal is to save the most lives, vulnerable individuals need to be vaccinated with an effective vaccine, even if that means it is done at a slower rate.
 
@@ -1035,7 +1036,7 @@ figure3 <- cowplot::plot_grid(plot6,plot7,ncol = 1, align = "h", labels = c("A. 
 figure3
 ```
 
-![](figs/Fig3.png){fig-align="center" width=80% }
+![](figs/Fig3.png){fig-align="center" width="80%"}
 
 Under these conditions, approach B saves more lives overall. This finding is logical when we consider that approach B would clearly be optimal if both Vaccine 1 and Vaccine 2 had the same efficacy. Putting of vaccinations of vulnerable individuals is not worth it if the two vaccines have similar efficacies.
 
