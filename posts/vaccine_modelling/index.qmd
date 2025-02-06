@@ -4,7 +4,7 @@ preview: NULL
 author: "Jasper Yang"
 date: 12-28-2020
 categories: 
-image: "fig/Fig2.png"
+image: "figs/Fig3.png"
 execute:
   eval: false
 ---
