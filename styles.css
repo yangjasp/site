@@ -1,1 +1,51 @@
-/* css styles */
+/* General Font Styling */
+body {
+  color: #333;
+}
+
+/* Navbar Customization */
+.navbar {
+  background-color: #004080;  /* Dark blue */
+  border-bottom: 2px solid #00264d;
+}
+
+.navbar a {
+  color: #fff !important;
+}
+
+.navbar a:hover {
+  color: #ffcc00 !important; /* Highlight on hover */
+}
+
+/* About Section Styling */
+.about {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Headings */
+
+/* Links */
+a {
+  color: #004080;
+}
+
+a:hover {
+  color: #ffcc00;
+  text-decoration: none;
+}
+
+/* Profile Image */
+img[alt="Portrait"] {
+  border: 4px solid #004080;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.about .about-contents {
+  max-width: 600px;  /* Widen the text area */
+  margin: 0 auto;    /* Center the content */
+  padding: 0 1rem;   /* Adjust padding if needed */
+}
+
