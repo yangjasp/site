@@ -1,0 +1,33 @@
+---
+title: Research
+---
+
+::: {.content-hidden unless-format="markdown"}
+pubs_update_start
+:::
+
+### Statistical Methods
+
+* **Yang, JB** , Shepherd BE, Lumley T, Shaw PA (2025). [Optimal two-phase survey designs for generalized raking with multiple parameters of interest](https://doi.org/10.48550/arXiv.2507.16945). *ArXiv pre-print*.
+
+* **Yang, JB** , Lumley T, Shepherd BE, Shaw PA (2025). [Improving optimal subsampling through stratification](https://doi.org/10.48550/arXiv.2512.20837). *ArXiv pre-print*.
+
+### Statistical Software
+
+* **Yang JB**, Shepherd BE, Lumley T, Shaw PA (2025). [Efficient Multi-Wave Sampling with the R Package optimal](https://doi.org/10.18637/jss.v114.i10.). *Journal of Statistical Software*. 
+
+
+### Public Health and Medicine
+
+* Mossavar-Rahmani Y, Hyun N, Hakun JG, Katz MJ, Pavlovic JM, Zetterberg H, Wang Z, **Yang JB**, Wylie-Rosett J, Herbert JR, Sliwinski MJ, Shaw PA (2025). [The effects of the Multicultural Healthy Diet on cognitive decline and Alzheimer’s disease risk: a randomized controlled trial in middle-aged adults](https://doi.org/10.1016/j.ajcnut.2025.05.011). *American Journal of Clinical Nutrition*.
+
+* Shaw PA, **Yang JB**, Mowery DL, Schriver ER, Mahoney KB, Bar KJ, Ellenberg SS (2022). [Determinants of COVID-19 Hospital Outcomes in the University of Pennsylvania Health System](https://doi.org/10.1371/journal.pone.0268528). *PlosOne*.
+
+* Bar K, Shaw P, Choi G, Aqui N, Fesnak A, **Yang JB**, Soto-Calderon H, Grajales L, Starr J, Andronov M, Mastellone M, Amonu C, Feret G, DeMarshall M, Buchanan M, Caturla M, Gordon J, Wanicur A, Monroy MA, Mampe
+F, Lindemuth E, Gouma S, Mullin A, Barilla H, Pronina A, Irwin L, Thomas R, Eichinger R, Demuth F, Prak E,
+Pascual JL, Short W, Elovitz M, Baron J, Meyer N, Degnan K, Frank I, Hensley S, Siegel DL, Tebas P (2020). [A randomized, controlled, phase 1 study of convalescent plasma for individuals hospitalized with COVID-19 pneumonia](https://doi.org/10.1172/JCI140200). *Journal of Clinical Investigation*.
+
+::: {.content-hidden unless-format="markdown"}
+pubs_update_end
+:::
+

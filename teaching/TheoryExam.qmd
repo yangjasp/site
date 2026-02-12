@@ -1,0 +1,14 @@
+---
+title: "PhD Theory Exam Study Guide"
+---
+
+Here is a study guide I put together while preparing for the UW Biostatistics
+second-year PhD theory exam. I hope some people may find it useful.
+
+[Theory Exam Study Guide](2nd_Year_Theory_Exam_Study_Guide.pdf)
+
+I would also recommend checking out [these materials](https://ethanashby.github.io/teaching/theory_exam) prepared by another UW Biostats student, Ethan Asbhy, which include many more examples and course-specific notes.
+
+
+
+

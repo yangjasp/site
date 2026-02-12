@@ -1,0 +1,36 @@
+---
+title: Teaching
+---
+
+### Mentor
+
+[**Statistics Directed Reading Program**](https://spa-drp.github.io/), University of Washington
+
+- Winter 2026: Mentored undergraduate students in reading and projects in statistical decision theory.
+
+### Teaching Assistant
+
+**BIOST 522: Statistical Inference for Biometry I**, University of Washington, Fall 2025 (Professor: Andrea Rotnizky)
+
+**STAT 310: Statistical Modelling**, Grinnell College, Fall 2021 (Professor: Shonda Kuiper)
+
+### Tutor
+
+**STAT 581: Advanced Theory of Statistical Inference I**, University of Washington
+
+**BIOST 514: Biostatistics I**, University of Washington
+
+### Teaching Related Service
+
+**University of Washington**
+
+- Biostatistics Department Student Representative 2023-2026
+
+**Grinnell College**
+
+- Member of Biology Department Student Educational Policy Committee 2020-2021
+
+### Other
+
+[**UW Biostatistics 2nd-year PhD Theory Exam Study Materials**](teaching/TheoryExam.qmd)
+
