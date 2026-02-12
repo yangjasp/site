@@ -1,5 +1,19 @@
 [
   {
+    "objectID": "teaching.html",
+    "href": "teaching.html",
+    "title": "Teaching",
+    "section": "",
+    "text": "Mentor\nStatistics Directed Reading Program, University of Washington\n\nWinter 2026: Mentored undergraduate students in reading and projects in statistical decision theory.\n\n\n\nTeaching Assistant\nBIOST 522: Statistical Inference for Biometry I, University of Washington, Fall 2025 (Professor: Andrea Rotnizky)\nSTAT 310: Statistical Modelling, Grinnell College, Fall 2021 (Professor: Shonda Kuiper)\n\n\nTutor\nSTAT 581: Advanced Theory of Statistical Inference I, University of Washington\nBIOST 514: Biostatistics I, University of Washington\n\n\nTeaching Related Service\nUniversity of Washington\n\nBiostatistics Department Student Representative 2023-2026\n\nGrinnell College\n\nMember of Biology Department Student Educational Policy Committee 2020-2021\n\n\n\nOther\nUW Biostatistics 2nd-year PhD Theory Exam Study Materials"
+  },
+  {
+    "objectID": "research.html",
+    "href": "research.html",
+    "title": "Research",
+    "section": "",
+    "text": "Statistical Methods\n\nYang, JB , Shepherd BE, Lumley T, Shaw PA (2025). Optimal two-phase survey designs for generalized raking with multiple parameters of interest. ArXiv pre-print.\nYang, JB , Lumley T, Shepherd BE, Shaw PA (2025). Improving optimal subsampling through stratification. ArXiv pre-print.\n\n\n\nStatistical Software\n\nYang JB, Shepherd BE, Lumley T, Shaw PA (2025). Efficient Multi-Wave Sampling with the R Package optimal. Journal of Statistical Software.\n\n\n\nPublic Health and Medicine\n\nMossavar-Rahmani Y, Hyun N, Hakun JG, Katz MJ, Pavlovic JM, Zetterberg H, Wang Z, Yang JB, Wylie-Rosett J, Herbert JR, Sliwinski MJ, Shaw PA (2025). The effects of the Multicultural Healthy Diet on cognitive decline and Alzheimer’s disease risk: a randomized controlled trial in middle-aged adults. American Journal of Clinical Nutrition.\nShaw PA, Yang JB, Mowery DL, Schriver ER, Mahoney KB, Bar KJ, Ellenberg SS (2022). Determinants of COVID-19 Hospital Outcomes in the University of Pennsylvania Health System. PlosOne.\nBar K, Shaw P, Choi G, Aqui N, Fesnak A, Yang JB, Soto-Calderon H, Grajales L, Starr J, Andronov M, Mastellone M, Amonu C, Feret G, DeMarshall M, Buchanan M, Caturla M, Gordon J, Wanicur A, Monroy MA, Mampe F, Lindemuth E, Gouma S, Mullin A, Barilla H, Pronina A, Irwin L, Thomas R, Eichinger R, Demuth F, Prak E, Pascual JL, Short W, Elovitz M, Baron J, Meyer N, Degnan K, Frank I, Hensley S, Siegel DL, Tebas P (2020). A randomized, controlled, phase 1 study of convalescent plasma for individuals hospitalized with COVID-19 pneumonia. Journal of Clinical Investigation."
+  },
+  {
     "objectID": "posts/luck_in_sports1/index.html",
     "href": "posts/luck_in_sports1/index.html",
     "title": "May the Luckiest Team Win",
@@ -287,34 +301,6 @@
     "text": "I am a third-year PHD student in the Department of Biostatistics at the University of Washington. I graduated from Grinnell College with a major in biology and concentration in statistics before earning an MSc in statistics from the University of Essex. I am currently researching study designs for measurement error correction with the Shaw Lab at Kaiser Permanente Washington Health Research Institute. My graduate studies are supported by the NSF Graduate Research Fellowship.\nMy primary research interests include statistical decision theory, causal inference, and survey sampling. I am particularly motivated by questions in health policy and health services research, where I hope to draw stronger connections between modern statistical methods and real-world decision-making. I am also drawn to broader questions about rationality and the philosophy of science. You can reach me on Twitter @jyang29 or via email at jbyang@uw.edu. Thanks for visiting!"
   },
   {
-    "objectID": "blog.html",
-    "href": "blog.html",
-    "title": "Blog",
-    "section": "",
-    "text": "Rediscovering a fun probability problem\n\n\n\n\n\n\n\n\n\n\n\n\nJun 25, 2023\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nMay the Luckiest Team Win\n\n\n\n\n\n\n\nsports\n\n\n\n\n\n\n\n\n\n\n\nOct 18, 2022\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nStatistical Significance by Betting: Re-framing the p-value?\n\n\n\n\n\n\n\n\n\n\n\n\nJan 24, 2021\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nModeling COVID-19 and Vaccine Rollout Strategies\n\n\n\n\n\n\n\n\n\n\n\n\nDec 28, 2020\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nCOVID-19 Testing and Bayes’ Theorem\n\n\n\n\n\n\n\n\n\n\n\n\nDec 15, 2020\n\n\nJasper Yang\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "publications.html",
-    "href": "publications.html",
-    "title": "Research",
-    "section": "",
-    "text": "Statistical Methods\n\nYang, JB , Shepherd BE, Lumley T, Shaw PA (2025). Optimal two-phase survey designs for generalized raking with multiple parameters of interest. ArXiv pre-print.\nYang, JB , Lumley T, Shepherd BE, Shaw PA (2025). Improving optimal subsampling through stratification. ArXiv pre-print.\n\n\n\nStatistical Software\n\nYang JB, Shepherd BE, Lumley T, Shaw PA (2025). Efficient Multi-Wave Sampling with the R Package optimal. Journal of Statistical Software.\n\n\n\nPublic Health and Medicine\n\nMossavar-Rahmani Y, Hyun N, Hakun JG, Katz MJ, Pavlovic JM, Zetterberg H, Wang Z, Yang JB, Wylie-Rosett J, Herbert JR, Sliwinski MJ, Shaw PA (2025). The effects of the Multicultural Healthy Diet on cognitive decline and Alzheimer’s disease risk: a randomized controlled trial in middle-aged adults. American Journal of Clinical Nutrition.\nShaw PA, Yang JB, Mowery DL, Schriver ER, Mahoney KB, Bar KJ, Ellenberg SS (2022). Determinants of COVID-19 Hospital Outcomes in the University of Pennsylvania Health System. PlosOne.\nBar K, Shaw P, Choi G, Aqui N, Fesnak A, Yang JB, Soto-Calderon H, Grajales L, Starr J, Andronov M, Mastellone M, Amonu C, Feret G, DeMarshall M, Buchanan M, Caturla M, Gordon J, Wanicur A, Monroy MA, Mampe F, Lindemuth E, Gouma S, Mullin A, Barilla H, Pronina A, Irwin L, Thomas R, Eichinger R, Demuth F, Prak E, Pascual JL, Short W, Elovitz M, Baron J, Meyer N, Degnan K, Frank I, Hensley S, Siegel DL, Tebas P (2020). A randomized, controlled, phase 1 study of convalescent plasma for individuals hospitalized with COVID-19 pneumonia. Journal of Clinical Investigation."
-  },
-  {
-    "objectID": "teaching.html",
-    "href": "teaching.html",
-    "title": "Teaching",
-    "section": "",
-    "text": "Mentor\nStatistics Directed Reading Program, University of Washington\n\nWinter 2026: Mentored undergraduate students in reading and projects in statistical decision theory.\n\n\n\nTeaching Assistant\nBIOST 522: Statistical Inference for Biometry I, University of Washington, Fall 2025 (Professor: Andrea Rotnizky)\nSTAT 310: Statistical Modelling, Grinnell College, Fall 2021 (Professor: Shonda Kuiper)\n\n\nTutor\nSTAT 581: Advanced Theory of Statistical Inference I, University of Washington\nBIOST 514: Biostatistics I, University of Washington\n\n\nTeaching Related Service\nUniversity of Washington\n\nBiostatistics Department Student Representative 2023-2026\n\nGrinnell College\n\nMember of Biology Department Student Educational Policy Committee 2020-2021\n\n\n\nOther\nUW Biostatistics 2nd-year PhD Theory Exam Study Materials"
-  },
-  {
-    "objectID": "teaching.html#tutor",
-    "href": "teaching.html#tutor",
-    "title": "Teaching",
-    "section": "Tutor",
-    "text": "Tutor\nSTAT 581: Advanced Theory of Statistical Inference I, University of Washington\nBIOST 514: Biostatistics I, University of Washington\n\nTeaching Related Service\nUniversity of Washington\n\nBiostatistics Department Student Representative 2023-2026\n\nGrinnell College\n\nMember of Biology Department Student Educational Policy Committee 2020-2021"
-  },
-  {
     "objectID": "teaching/TheoryExam.html",
     "href": "teaching/TheoryExam.html",
     "title": "PhD Theory Exam Study Guide",
@@ -322,10 +308,10 @@
     "text": "Here is a study guide I put together while preparing for the UW Biostatistics second-year PhD theory exam. I hope some people may find it useful.\nTheory Exam Study Guide\nI would also recommend checking out these materials prepared by another UW Biostats student, Ethan Asbhy, which include many more examples and course-specific notes."
   },
   {
-    "objectID": "research.html",
-    "href": "research.html",
-    "title": "Research",
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Blog",
     "section": "",
-    "text": "Statistical Methods\n\nYang, JB , Shepherd BE, Lumley T, Shaw PA (2025). Optimal two-phase survey designs for generalized raking with multiple parameters of interest. ArXiv pre-print.\nYang, JB , Lumley T, Shepherd BE, Shaw PA (2025). Improving optimal subsampling through stratification. ArXiv pre-print.\n\n\n\nStatistical Software\n\nYang JB, Shepherd BE, Lumley T, Shaw PA (2025). Efficient Multi-Wave Sampling with the R Package optimal. Journal of Statistical Software.\n\n\n\nPublic Health and Medicine\n\nMossavar-Rahmani Y, Hyun N, Hakun JG, Katz MJ, Pavlovic JM, Zetterberg H, Wang Z, Yang JB, Wylie-Rosett J, Herbert JR, Sliwinski MJ, Shaw PA (2025). The effects of the Multicultural Healthy Diet on cognitive decline and Alzheimer’s disease risk: a randomized controlled trial in middle-aged adults. American Journal of Clinical Nutrition.\nShaw PA, Yang JB, Mowery DL, Schriver ER, Mahoney KB, Bar KJ, Ellenberg SS (2022). Determinants of COVID-19 Hospital Outcomes in the University of Pennsylvania Health System. PlosOne.\nBar K, Shaw P, Choi G, Aqui N, Fesnak A, Yang JB, Soto-Calderon H, Grajales L, Starr J, Andronov M, Mastellone M, Amonu C, Feret G, DeMarshall M, Buchanan M, Caturla M, Gordon J, Wanicur A, Monroy MA, Mampe F, Lindemuth E, Gouma S, Mullin A, Barilla H, Pronina A, Irwin L, Thomas R, Eichinger R, Demuth F, Prak E, Pascual JL, Short W, Elovitz M, Baron J, Meyer N, Degnan K, Frank I, Hensley S, Siegel DL, Tebas P (2020). A randomized, controlled, phase 1 study of convalescent plasma for individuals hospitalized with COVID-19 pneumonia. Journal of Clinical Investigation."
+    "text": "Rediscovering a fun probability problem\n\n\n\n\n\n\n\n\n\n\n\n\nJun 25, 2023\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nMay the Luckiest Team Win\n\n\n\n\n\n\n\nsports\n\n\n\n\n\n\n\n\n\n\n\nOct 18, 2022\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nStatistical Significance by Betting: Re-framing the p-value?\n\n\n\n\n\n\n\n\n\n\n\n\nJan 24, 2021\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nModeling COVID-19 and Vaccine Rollout Strategies\n\n\n\n\n\n\n\n\n\n\n\n\nDec 28, 2020\n\n\nJasper Yang\n\n\n\n\n\n\n  \n\n\n\n\nCOVID-19 Testing and Bayes’ Theorem\n\n\n\n\n\n\n\n\n\n\n\n\nDec 15, 2020\n\n\nJasper Yang\n\n\n\n\n\n\nNo matching items"
   }
 ]
