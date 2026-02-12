@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://yangjasp.github.io/Quarto_site/teaching.html</loc>
+    <lastmod>2026-02-12T18:18:03.605Z</lastmod>
+  </url>
+  <url>
+    <loc>https://yangjasp.github.io/Quarto_site/research.html</loc>
+    <lastmod>2026-02-12T18:18:03.923Z</lastmod>
+  </url>
+  <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/luck_in_sports1/index.html</loc>
-    <lastmod>2025-12-30T17:09:46.981Z</lastmod>
+    <lastmod>2026-02-12T18:18:04.465Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/probable_sequences/index.html</loc>
-    <lastmod>2025-12-30T17:09:47.327Z</lastmod>
+    <lastmod>2026-02-12T18:18:04.846Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/vaccine_modelling/index.html</loc>
-    <lastmod>2025-12-30T17:09:48.172Z</lastmod>
+    <lastmod>2026-02-12T18:18:05.783Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/covid19_bayes/index.html</loc>
-    <lastmod>2025-12-30T17:09:48.626Z</lastmod>
+    <lastmod>2026-02-12T18:18:06.272Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/posts/p_values_as_bets/index.html</loc>
-    <lastmod>2025-12-30T17:09:49.371Z</lastmod>
+    <lastmod>2026-02-12T18:18:07.146Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/index.html</loc>
-    <lastmod>2025-12-30T17:09:49.587Z</lastmod>
+    <lastmod>2026-02-12T18:18:07.356Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/about.html</loc>
-    <lastmod>2025-12-30T17:09:49.794Z</lastmod>
+    <lastmod>2026-02-12T18:18:07.565Z</lastmod>
+  </url>
+  <url>
+    <loc>https://yangjasp.github.io/Quarto_site/teaching/TheoryExam.html</loc>
+    <lastmod>2026-02-12T18:18:07.769Z</lastmod>
   </url>
   <url>
     <loc>https://yangjasp.github.io/Quarto_site/blog.html</loc>
-    <lastmod>2025-12-30T17:09:50.152Z</lastmod>
+    <lastmod>2026-02-12T18:18:08.128Z</lastmod>
   </url>
 </urlset>
